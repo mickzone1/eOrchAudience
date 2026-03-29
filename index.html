@@ -691,7 +691,7 @@
             </p>
         </div>
 
-        <div style="text-align: center; margin: 20px 0;">
+        <div id="sampleLinkSection" style="text-align: center; margin: 20px 0;">
             <button class="btn-sample" onclick="copySampleLink()">
                 🎵 Copy Sample Dropbox Link to Try
             </button>
@@ -703,7 +703,7 @@
         <div id="linkInputs" class="link-inputs">
             <div class="input-wrapper">
                 <div class="input-group">
-                    <input type="text" placeholder="Track Name (opt.)" class="track-name-input" style="max-width: 150px;">
+                    <input type="text" placeholder="Track Name (opt.)" class="track-name-input" style="max-width: 155px;">
                     <input type="url" placeholder="Paste Dropbox link" class="link-input">
                     <button type="button" class="btn-paste" onclick="pasteToInput(this)">📋 Paste</button>
                 </div>
@@ -922,7 +922,7 @@
             wrapper.className = 'input-wrapper';
             wrapper.innerHTML = `
                 <div class="input-group">
-                    <input type="text" placeholder="Track Name (opt.)" class="track-name-input" style="max-width: 150px;">
+                    <input type="text" placeholder="Track Name (opt.)" class="track-name-input" style="max-width: 155px;">
                     <input type="url" placeholder="Paste Dropbox link" class="link-input">
                     <button type="button" class="btn-paste" onclick="pasteToInput(this)">📋 Paste</button>
                     <button class="btn btn-remove" onclick="removeInput(this)">Remove</button>
@@ -1023,6 +1023,12 @@
                 const themeSelector = document.querySelector('.theme-selector');
                 if (themeSelector) {
                     themeSelector.style.display = 'none';
+                }
+                
+                // Hide sample link section permanently
+                const sampleLinkSection = document.getElementById('sampleLinkSection');
+                if (sampleLinkSection) {
+                    sampleLinkSection.style.display = 'none';
                 }
                 
                 // Auto-scroll to QR code with cross-browser support
