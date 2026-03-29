@@ -592,28 +592,29 @@
         <div class="theme-selector" style="margin-top: 25px;">
             <h3>🎨 Choose Player Theme</h3>
             <div class="theme-swatch-container">
-                <div class="theme-swatch selected" onclick="selectTheme('purple')" style="background: linear-gradient(135deg, #667eea, #764ba2);" title="Purple"></div>
-                <div class="theme-swatch" onclick="selectTheme('blue')" style="background: linear-gradient(135deg, #2196f3, #21cbf3);" title="Blue"></div>
-                <div class="theme-swatch" onclick="selectTheme('green')" style="background: linear-gradient(135deg, #11998e, #38ef7d);" title="Green"></div>
-                <div class="theme-swatch" onclick="selectTheme('orange')" style="background: linear-gradient(135deg, #f093fb, #f5576c);" title="Orange"></div>
-                <div class="theme-swatch" onclick="selectTheme('teal')" style="background: linear-gradient(135deg, #13547a, #80d0c7);" title="Teal"></div>
-                <div class="theme-swatch" onclick="selectTheme('pink')" style="background: linear-gradient(135deg, #ff758c, #ff7eb3);" title="Pink"></div>
+                <div class="theme-swatch" onclick="selectTheme('red')" style="background: linear-gradient(135deg, #FF6B35, #FF6B35);" title="Red Transition"></div>
+                <div class="theme-swatch" onclick="selectTheme('orange')" style="background: linear-gradient(135deg, #FAB319, #FAB319);" title="Original Orange"></div>
+                <div class="theme-swatch" onclick="selectTheme('yellow')" style="background: linear-gradient(135deg, #FFD23F, #FFD23F);" title="Yellow Peak"></div>
+                <div class="theme-swatch" onclick="selectTheme('green')" style="background: linear-gradient(135deg, #51C878, #51C878);" title="Green Bridge"></div>
+                <div class="theme-swatch" onclick="selectTheme('cyan')" style="background: linear-gradient(135deg, #00D4FF, #00D4FF);" title="Cyan Lighter"></div>
+                <div class="theme-swatch selected" onclick="selectTheme('blue')" style="background: linear-gradient(135deg, #09A7CC, #09A7CC);" title="Original Blue"></div>
+                <div class="theme-swatch" onclick="selectTheme('purple')" style="background: linear-gradient(135deg, #A55BFF, #A55BFF);" title="Purple Accent"></div>
             </div>
             <div class="theme-preview">
                 <h4>Preview</h4>
                 <div class="preview-player">
-                    <button class="preview-btn" id="previewBtn" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                    <button class="preview-btn" id="previewBtn" style="background: linear-gradient(135deg, #09A7CC, #09A7CC);">
                         <div class="preview-play-icon"></div>
                     </button>
                     <div class="preview-info">
                         <div class="preview-label">Track 1</div>
                         <div class="preview-progress">
-                            <div class="preview-progress-bar" id="previewProgressBar" style="background: linear-gradient(135deg, #667eea, #764ba2);"></div>
+                            <div class="preview-progress-bar" id="previewProgressBar" style="background: linear-gradient(135deg, #09A7CC, #09A7CC);"></div>
                         </div>
                     </div>
                 </div>
             </div>
-            <input type="hidden" id="selectedTheme" value="purple">
+            <input type="hidden" id="selectedTheme" value="blue">
         </div>
         
         <div style="margin-top: 20px;">
@@ -680,15 +681,16 @@
 
         // ===== COLOR THEME CONFIGURATION =====
         const colorThemes = {
-            purple: { primary: '#667eea', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
-            blue: { primary: '#2196f3', gradient: 'linear-gradient(135deg, #2196f3 0%, #21cbf3 100%)' },
-            green: { primary: '#11998e', gradient: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' },
-            orange: { primary: '#f093fb', gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
-            teal: { primary: '#13547a', gradient: 'linear-gradient(135deg, #13547a 0%, #80d0c7 100%)' },
-            pink: { primary: '#ff758c', gradient: 'linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%)' }
+            red: { name: 'Red Transition', primary: '#FF6B35', gradient: 'linear-gradient(135deg, #FF6B35 0%, #FF6B35 100%)' },
+            orange: { name: 'Original Orange', primary: '#FAB319', gradient: 'linear-gradient(135deg, #FAB319 0%, #FAB319 100%)' },
+            yellow: { name: 'Yellow Peak', primary: '#FFD23F', gradient: 'linear-gradient(135deg, #FFD23F 0%, #FFD23F 100%)' },
+            green: { name: 'Green Bridge', primary: '#51C878', gradient: 'linear-gradient(135deg, #51C878 0%, #51C878 100%)' },
+            cyan: { name: 'Cyan Lighter', primary: '#00D4FF', gradient: 'linear-gradient(135deg, #00D4FF 0%, #00D4FF 100%)' },
+            blue: { name: 'Original Blue', primary: '#09A7CC', gradient: 'linear-gradient(135deg, #09A7CC 0%, #09A7CC 100%)' },
+            purple: { name: 'Purple Accent', primary: '#A55BFF', gradient: 'linear-gradient(135deg, #A55BFF 0%, #A55BFF 100%)' }
         };
 
-        let selectedTheme = localStorage.getItem('eOrchTheme') || 'purple';
+        let selectedTheme = localStorage.getItem('eOrchTheme') || 'blue';
 
         function selectTheme(theme) {
             selectedTheme = theme;
@@ -724,7 +726,7 @@
             
             // Set selected swatch
             document.querySelectorAll('.theme-swatch').forEach((swatch, index) => {
-                const themes = ['purple', 'blue', 'green', 'orange', 'teal', 'pink'];
+                const themes = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple'];
                 if (themes[index] === selectedTheme) {
                     swatch.classList.add('selected');
                 }
