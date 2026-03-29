@@ -175,6 +175,11 @@
             font-weight: 500;
         }
 
+        .track-status.loading {
+            color: #e65100;
+            font-weight: 500;
+        }
+
         .track-spinner {
             display: none;
             width: 20px;
@@ -274,6 +279,8 @@
         let audioElements = {};
         let trackStates = {};
         let timeouts = {};
+        let playbackFlags = {};
+        let stuckMonitors = {};
         let preloadProgress = 0;
         let totalTracks = 0;
 
@@ -327,6 +334,8 @@
                 trackStates[index] = 'loading';
                 audioElements[index] = null;
                 timeouts[index] = null;
+                playbackFlags[index] = false;
+                stuckMonitors[index] = null;
             });
         }
 
@@ -406,7 +415,7 @@
                 return;
             }
 
-            if (trackStates[index] === 'error') {
+            if (trackStates[index] === 'error' || trackStates[index] === 'loading_timeout' || trackStates[index] === 'playback_stuck') {
                 resetTrack(index);
             }
 
@@ -426,7 +435,7 @@
             btn.classList.add('disabled');
             spinner.classList.add('show');
             status.textContent = 'Loading...';
-            status.className = 'track-status';
+            status.className = 'track-status loading';
             trackStates[index] = 'loading';
 
             const audio = audioElements[index];
@@ -444,30 +453,70 @@
 
         function playAudio(audio, index, btn, spinner, status, item) {
             console.log(`Playing Track ${index + 1}`);
+            console.log('Audio duration:', audio.duration || 'unknown');
+
+            playbackFlags[index] = false;
+            let lastTimeUpdate = audio.currentTime;
+            let stuckCounter = 0;
 
             const timeout = setTimeout(() => {
-                spinner.classList.remove('show');
-                status.textContent = 'Timeout';
-                status.className = 'track-status error';
-                btn.classList.remove('disabled');
-                trackStates[index] = 'error';
-                audio.pause();
+                if (!playbackFlags[index]) {
+                    console.log('Loading timeout for track', index + 1);
+                    spinner.classList.remove('show');
+                    status.textContent = 'Loading timeout';
+                    status.className = 'track-status error';
+                    btn.classList.remove('disabled');
+                    trackStates[index] = 'loading_timeout';
+                    audio.pause();
+                    audio.currentTime = 0;
+                    clearStuckMonitor(index);
+                }
             }, 10000);
 
+            timeouts[index] = timeout;
+
             audio.oncanplaythrough = () => {
-                clearTimeout(timeout);
-                spinner.classList.remove('show');
+                console.log('oncanplaythrough fired for track', index + 1);
             };
 
-            audio.currentTime = 0;
+            audio.ontimeupdate = () => {
+                const currentTime = audio.currentTime;
+                
+                if (currentTime === lastTimeUpdate && playbackFlags[index]) {
+                    stuckCounter++;
+                    console.log('Playback stuck counter:', stuckCounter, 'for track', index + 1);
+                    
+                    if (stuckCounter >= 3) {
+                        console.log('Playback stuck for track', index + 1);
+                        clearStuckMonitor(index);
+                        spinner.classList.remove('show');
+                        status.textContent = 'Playback stuck';
+                        status.className = 'track-status error';
+                        btn.classList.remove('disabled');
+                        trackStates[index] = 'playback_stuck';
+                        audio.pause();
+                    }
+                } else {
+                    stuckCounter = 0;
+                    lastTimeUpdate = currentTime;
+                }
+            };
+
             audio.play().then(() => {
+                console.log('play() succeeded for track', index + 1);
+                playbackFlags[index] = true;
+                clearTimeout(timeouts[index]);
+                
                 trackStates[index] = 'playing';
                 btn.classList.remove('disabled');
                 btn.classList.add('playing');
                 status.textContent = 'Playing...';
                 status.className = 'track-status playing';
+                spinner.classList.remove('show');
 
                 audio.onended = () => {
+                    console.log('Playback ended for track', index + 1);
+                    clearStuckMonitor(index);
                     trackStates[index] = 'complete';
                     btn.classList.remove('playing');
                     btn.classList.add('disabled');
@@ -476,6 +525,8 @@
                 };
 
                 audio.onerror = () => {
+                    console.error('Audio error for track', index + 1);
+                    clearStuckMonitor(index);
                     trackStates[index] = 'error';
                     btn.classList.remove('disabled');
                     status.textContent = 'Error';
@@ -483,14 +534,21 @@
                 };
 
             }).catch(err => {
-                console.error('Play error:', err);
-                clearTimeout(timeout);
+                console.error('Play error for track', index + 1, err);
+                clearTimeout(timeouts[index]);
                 spinner.classList.remove('show');
                 trackStates[index] = 'error';
                 btn.classList.remove('disabled');
                 status.textContent = 'Error';
                 status.className = 'track-status error';
             });
+        }
+
+        function clearStuckMonitor(index) {
+            if (stuckMonitors[index]) {
+                clearInterval(stuckMonitors[index]);
+                stuckMonitors[index] = null;
+            }
         }
 
         function resetTrack(index) {
@@ -508,6 +566,9 @@
                 clearTimeout(timeouts[index]);
                 timeouts[index] = null;
             }
+            
+            clearStuckMonitor(index);
+            playbackFlags[index] = false;
             
             if (audioElements[index]) {
                 audioElements[index].pause();
