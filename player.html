@@ -98,6 +98,26 @@
             margin-bottom: 5px;
         }
 
+        .spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f0f0f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        .spinner.show {
+            display: block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         .status {
             margin-top: 15px;
             padding: 12px;
@@ -124,23 +144,6 @@
         .status.complete {
             background: #e3f2fd;
             color: #1565c0;
-        }
-
-        .fallback-btn {
-            display: none;
-            background: #f0f0f0;
-            color: #333;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 14px;
-            margin-top: 15px;
-            cursor: pointer;
-            text-decoration: none;
-        }
-
-        .fallback-btn.show {
-            display: inline-block;
         }
 
         .instructions {
@@ -186,11 +189,11 @@
         <button class="play-btn" id="playBtn" onclick="handlePlay()">
             <div class="play-icon"></div>
         </button>
+        <div id="spinner" class="spinner"></div>
         <div class="track-info">
             <div class="track-number" id="trackNumber">Track 1</div>
             <div id="trackStatus">Tap the play button to listen</div>
         </div>
-        <a id="fallbackLink" class="fallback-btn" target="_blank" rel="noopener">Open in Dropbox</a>
         <div class="instructions">
             Tap play to start • Each tap plays the next track
         </div>
@@ -206,6 +209,7 @@
         let currentTrack = 0;
         let isPlaying = false;
         let audioElement = null;
+        let loadTimeout = null;
 
         function loadTracks() {
             try {
@@ -229,25 +233,10 @@
         }
 
         function convertDropboxLink(url) {
-            const fileId = extractFileId(url);
-            if (fileId) {
-                return `https://dl.dropboxusercontent.com/s/${fileId}/audio.mp3?dl=0`;
-            }
-            return url;
-        }
-
-        function extractFileId(url) {
-            const patterns = [
-                /\/s\/([a-zA-Z0-9-_]+)\//,
-                /\/s\/([a-zA-Z0-9-_]+)\?/,
-                /dropbox.com\/s\/([a-zA-Z0-9-_]+)/
-            ];
-
-            for (const pattern of patterns) {
-                const match = url.match(pattern);
-                if (match) return match[1];
-            }
-            return null;
+            // Remove ?dl=0 or &dl=0 parameters
+            url = url.replace(/[?&]dl=\d+/, '');
+            // Replace domain for direct streaming
+            return url.replace('www.dropbox.com', 'dl.dropboxusercontent.com');
         }
 
         function updateTrackNumber() {
@@ -278,12 +267,33 @@
 
             btn.classList.add('disabled');
 
-            const audioUrl = convertDropboxLink(tracks[currentTrack]);
+            const originalUrl = tracks[currentTrack];
+            const audioUrl = convertDropboxLink(originalUrl);
             
+            console.log('Original URL:', originalUrl);
+            console.log('Converted URL:', audioUrl);
+            
+            // Show spinner
+            document.getElementById('spinner').classList.add('show');
             setStatus('Loading...', 'playing');
 
             audioElement = new Audio(audioUrl);
             audioElement.preload = 'auto';
+            
+            // 5-second timeout
+            loadTimeout = setTimeout(() => {
+                document.getElementById('spinner').classList.remove('show');
+                showError('Loading timed out. Check your internet and Dropbox link.');
+                btn.classList.remove('disabled');
+                if (audioElement) {
+                    audioElement.pause();
+                }
+            }, 5000);
+            
+            audioElement.oncanplay = () => {
+                clearTimeout(loadTimeout);
+                document.getElementById('spinner').classList.remove('show');
+            };
 
             audioElement.play().then(() => {
                 isPlaying = true;
@@ -302,23 +312,18 @@
                 };
 
                 audioElement.onerror = () => {
+                    console.error('Audio error');
                     showError('Cannot play this track. Please check the Dropbox link and try again.');
                     btn.classList.remove('disabled');
-                    showFallback(tracks[currentTrack]);
                 };
 
             }).catch(err => {
-                console.error(err);
+                console.error('Play error:', err);
+                clearTimeout(loadTimeout);
+                document.getElementById('spinner').classList.remove('show');
                 showError('Cannot play this track. Please check the Dropbox link and try again.');
                 btn.classList.remove('disabled');
-                showFallback(tracks[currentTrack]);
             });
-        }
-
-        function showFallback(url) {
-            const fallbackLink = document.getElementById('fallbackLink');
-            fallbackLink.href = url;
-            fallbackLink.classList.add('show');
         }
 
         function resetButton() {
