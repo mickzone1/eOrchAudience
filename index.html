@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio QR Code Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .link-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        input[type="url"] {
+            flex: 1;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="url"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[type="url"]::placeholder {
+            color: #aaa;
+        }
+
+        .btn {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-add {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-add:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-add:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 100%;
+            padding: 16px;
+            font-size: 17px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-remove {
+            background: #ff6b6b;
+            color: white;
+            padding: 14px 16px;
+        }
+
+        .btn-remove:hover {
+            background: #ee5a5a;
+        }
+
+        .qr-section {
+            display: none;
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .qr-section.show {
+            display: block;
+        }
+
+        .qr-canvas {
+            margin: 20px auto;
+            display: block;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 10px;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            margin-top: 15px;
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(17, 153, 142, 0.4);
+        }
+
+        .btn-back {
+            background: #f0f0f0;
+            color: #333;
+            margin-top: 15px;
+        }
+
+        .btn-back:hover {
+            background: #e0e0e0;
+        }
+
+        .error {
+            color: #ff6b6b;
+            font-size: 13px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper.error input {
+            border-color: #ff6b6b;
+        }
+
+        .input-wrapper.error .error {
+            display: block;
+        }
+
+        .instructions {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .instructions h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .instructions ol {
+            color: #666;
+            padding-left: 20px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .permission-alert {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .permission-alert h3 {
+            color: #856404;
+            font-size: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .permission-alert ol {
+            color: #856404;
+            padding-left: 20px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .permission-alert strong {
+            color: #664d03;
+        }
+
+        .audio-list {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .audio-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .audio-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .audio-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .audio-name {
+            flex: 1;
+            color: #333;
+            font-size: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .input-group {
+                flex-wrap: wrap;
+            }
+
+            input[type="url"] {
+                width: 100%;
+            }
+
+            .btn-remove {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Audio QR Generator</h1>
+        <p class="subtitle">Create QR codes for your Google Drive audio files</p>
+
+        <div class="permission-alert">
+            <h3>⚠️ Important: Set File Permissions First</h3>
+            <ol>
+                <li>In Google Drive, right-click your audio file</li>
+                <li>Click <strong>Share</strong></li>
+                <li>Under "General access", select <strong>"Anyone with the link"</strong></li>
+                <li>Set role to <strong>Viewer</strong></li>
+                <li>Click <strong>Done</strong></li>
+            </ol>
+            <p style="color: #856404; font-size: 13px; margin-top: 12px; margin-bottom: 0;">
+                Without this step, students won't be able to play the audio!
+            </p>
+        </div>
+
+        <div class="instructions">
+            <h3>How to use:</h3>
+            <ol>
+                <li>Paste up to 5 Google Drive audio links below</li>
+                <li>Click "Generate QR Code"</li>
+                <li>Save or print the QR code</li>
+                <li>Share with students - they scan to listen!</li>
+            </ol>
+        </div>
+
+        <div id="linkInputs" class="link-inputs">
+            <div class="input-wrapper">
+                <div class="input-group">
+                    <input type="url" placeholder="Paste Google Drive audio link here" class="link-input">
+                </div>
+                <div class="error">Please enter a valid Google Drive link</div>
+            </div>
+        </div>
+
+        <button id="addBtn" class="btn btn-add" onclick="addInput()">+ Add Another Link</button>
+        
+        <div style="margin-top: 20px;">
+            <button id="submitBtn" class="btn btn-submit" onclick="generateQR()">Generate QR Code</button>
+        </div>
+
+        <div id="qrSection" class="qr-section">
+            <h2 style="color: #333; font-size: 20px; margin-bottom: 10px;">Your QR Code is Ready!</h2>
+            <p style="color: #666; font-size: 14px; margin-bottom: 15px;">Scan to listen to your audio files</p>
+            
+            <canvas id="qrCanvas" class="qr-canvas"></canvas>
+            
+            <div id="audioList" class="audio-list"></div>
+            
+            <button class="btn btn-download" onclick="downloadQR()">📥 Save QR Code</button>
+            <br>
+            <button class="btn btn-back" onclick="backToEditor()">← Create New QR Code</button>
+        </div>
+    </div>
+
+    <script>
+        let linkCount = 1;
+        const maxLinks = 5;
+        let generatedLinks = [];
+
+        function addInput() {
+            if (linkCount >= maxLinks) return;
+
+            const container = document.getElementById('linkInputs');
+            const wrapper = document.createElement('div');
+            wrapper.className = 'input-wrapper';
+            wrapper.innerHTML = `
+                <div class="input-group">
+                    <input type="url" placeholder="Paste Google Drive audio link here" class="link-input">
+                    <button class="btn btn-remove" onclick="removeInput(this)">Remove</button>
+                </div>
+                <div class="error">Please enter a valid Google Drive link</div>
+            `;
+            container.appendChild(wrapper);
+            linkCount++;
+
+            document.getElementById('addBtn').disabled = linkCount >= maxLinks;
+        }
+
+        function removeInput(btn) {
+            const wrapper = btn.closest('.input-wrapper');
+            wrapper.remove();
+            linkCount--;
+            document.getElementById('addBtn').disabled = linkCount >= maxLinks;
+        }
+
+        function isValidGoogleDriveLink(url) {
+            return url && (url.includes('drive.google.com') || url.includes('docs.google.com'));
+        }
+
+        function extractFileId(url) {
+            const patterns = [
+                /\/d\/([a-zA-Z0-9-_]+)/,
+                /id=([a-zA-Z0-9-_]+)/,
+                /\/file\/d\/([a-zA-Z0-9-_]+)/
+            ];
+
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match) return match[1];
+            }
+            return null;
+        }
+
+        function generateQR() {
+            const inputs = document.querySelectorAll('.link-input');
+            const wrappers = document.querySelectorAll('.input-wrapper');
+            let validLinks = [];
+
+            wrappers.forEach(w => w.classList.remove('error'));
+
+            inputs.forEach((input, index) => {
+                const url = input.value.trim();
+                if (url) {
+                    if (!isValidGoogleDriveLink(url)) {
+                        wrappers[index].classList.add('error');
+                        return;
+                    }
+                    validLinks.push(url);
+                }
+            });
+
+            if (validLinks.length === 0) {
+                alert('Please enter at least one Google Drive link');
+                return;
+            }
+
+            generatedLinks = validLinks;
+
+            const playerUrl = generatePlayerPage(validLinks);
+            const fullUrl = `https://yourusername.github.io/eOrchAudience/player.html#data=${btoa(JSON.stringify(validLinks))}`;
+
+            QRCode.toCanvas(document.getElementById('qrCanvas'), fullUrl, {
+                width: 300,
+                margin: 2,
+                color: {
+                    dark: '#333333',
+                    light: '#ffffff'
+                }
+            }, function(error) {
+                if (error) {
+                    console.error(error);
+                    alert('Error generating QR code');
+                    return;
+                }
+
+                displayAudioList(validLinks);
+                document.getElementById('linkInputs').parentElement.style.display = 'none';
+                document.getElementById('addBtn').style.display = 'none';
+                document.getElementById('submitBtn').style.display = 'none';
+                document.getElementById('qrSection').classList.add('show');
+            });
+        }
+
+        function displayAudioList(links) {
+            const list = document.getElementById('audioList');
+            list.innerHTML = '<h3 style="color: #333; font-size: 15px; margin-bottom: 12px;">Audio Files Included:</h3>';
+            
+            links.forEach((link, index) => {
+                const fileId = extractFileId(link) || `File ${index + 1}`;
+                const item = document.createElement('div');
+                item.className = 'audio-item';
+                item.innerHTML = `
+                    <div class="audio-number">${index + 1}</div>
+                    <div class="audio-name">Audio ${index + 1} (${fileId.substring(0, 15)}...)</div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function downloadQR() {
+            const canvas = document.getElementById('qrCanvas');
+            const link = document.createElement('a');
+            link.download = 'audio-qr-code.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function backToEditor() {
+            document.getElementById('linkInputs').parentElement.style.display = 'flex';
+            document.getElementById('addBtn').style.display = 'block';
+            document.getElementById('submitBtn').style.display = 'block';
+            document.getElementById('qrSection').classList.remove('show');
+            
+            const inputs = document.querySelectorAll('.link-input');
+            inputs.forEach(input => input.value = '');
+            
+            generatedLinks = [];
+        }
+
+        function generatePlayerPage(links) {
+            const playerHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Player</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .player {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 { color: #333; margin-bottom: 30px; font-size: 24px; }
+        .play-btn {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            transition: transform 0.3s;
+        }
+        .play-btn:hover { transform: scale(1.05); }
+        .play-btn:active { transform: scale(0.95); }
+        .play-icon {
+            width: 0;
+            height: 0;
+            border-left: 30px solid white;
+            border-top: 20px solid transparent;
+            border-bottom: 20px solid transparent;
+            margin-left: 8px;
+        }
+        .track-info { color: #666; font-size: 14px; margin-top: 20px; }
+        .track-number { color: #333; font-weight: 600; font-size: 16px; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <div class="player">
+        <h1>🎵 Audio Player</h1>
+        <button class="play-btn" onclick="playNext()">
+            <div class="play-icon"></div>
+        </button>
+        <div class="track-info">
+            <div class="track-number" id="trackNumber">Track 1</div>
+            <div id="trackStatus">Tap play to listen</div>
+        </div>
+    </div>
+    <script>
+        let currentTrack = 0;
+        const tracks = window.location.hash.substring(1).split(',').map(t => t.trim());
+        
+        function playNext() {
+            if (currentTrack >= tracks.length) {
+                currentTrack = 0;
+            }
+            const trackId = tracks[currentTrack].match(/\\/d\\/([a-zA-Z0-9-_]+)/)?.[1] || 
+                           tracks[currentTrack].match(/id=([a-zA-Z0-9-_]+)/)?.[1] || '';
+            const audioUrl = 'https://drive.google.com/uc?export=download&id=' + trackId;
+            
+            document.getElementById('trackNumber').textContent = 'Track ' + (currentTrack + 1);
+            document.getElementById('trackStatus').textContent = 'Loading...';
+            
+            const audio = new Audio(audioUrl);
+            audio.play().then(() => {
+                document.getElementById('trackStatus').textContent = 'Playing...';
+            }).catch(err => {
+                document.getElementById('trackStatus').textContent = 'Click to open in Drive';
+                window.open('https://drive.google.com/file/d/' + trackId + '/view', '_blank');
+            });
+            
+            audio.onended = () => {
+                currentTrack++;
+                if (currentTrack < tracks.length) {
+                    document.getElementById('trackStatus').textContent = 'Tap for next track';
+                } else {
+                    document.getElementById('trackStatus').textContent = 'All tracks complete!';
+                }
+            };
+        }
+    <\/script>
+</body>
+</html>`;
+            return playerHTML;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Player</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .player {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+
+        .play-btn {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .play-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .play-btn:active {
+            transform: scale(0.95);
+        }
+
+        .play-icon {
+            width: 0;
+            height: 0;
+            border-left: 35px solid white;
+            border-top: 22px solid transparent;
+            border-bottom: 22px solid transparent;
+            margin-left: 8px;
+        }
+
+        .track-info {
+            color: #666;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        .track-number {
+            color: #333;
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .status.playing {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .instructions {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            color: #999;
+            font-size: 12px;
+        }
+
+        @media (max-width: 480px) {
+            .player {
+                padding: 30px 20px;
+            }
+
+            .play-btn {
+                width: 100px;
+                height: 100px;
+            }
+
+            .play-icon {
+                border-left-width: 28px;
+                border-top-width: 18px;
+                border-bottom-width: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="player">
+        <h1>🎵 Audio Player</h1>
+        <button class="play-btn" id="playBtn" onclick="handlePlay()">
+            <div class="play-icon"></div>
+        </button>
+        <div class="track-info">
+            <div class="track-number" id="trackNumber">Track 1</div>
+            <div id="trackStatus">Tap the play button to listen</div>
+        </div>
+        <div class="instructions">
+            Tap play to start • Each tap plays the next track
+        </div>
+    </div>
+
+    <script>
+        let tracks = [];
+        let currentTrack = 0;
+        let isPlaying = false;
+
+        function loadTracks() {
+            try {
+                const hash = window.location.hash.substring(1);
+                const params = new URLSearchParams(hash);
+                const data = params.get('data');
+                
+                if (data) {
+                    tracks = JSON.parse(atob(data));
+                } else {
+                    tracks = hash.split(',').map(t => t.trim()).filter(t => t);
+                }
+
+                if (tracks.length === 0) {
+                    showError('No audio tracks found');
+                }
+            } catch (e) {
+                showError('Error loading tracks');
+                console.error(e);
+            }
+        }
+
+        function extractFileId(url) {
+            const patterns = [
+                /\/d\/([a-zA-Z0-9-_]+)/,
+                /id=([a-zA-Z0-9-_]+)/,
+                /\/file\/d\/([a-zA-Z0-9-_]+)/
+            ];
+
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match) return match[1];
+            }
+            return null;
+        }
+
+        function handlePlay() {
+            if (tracks.length === 0) {
+                showError('No tracks available');
+                return;
+            }
+
+            const btn = document.getElementById('playBtn');
+            btn.style.pointerEvents = 'none';
+
+            const trackId = extractFileId(tracks[currentTrack]);
+            
+            if (!trackId) {
+                showError('Invalid track link');
+                btn.style.pointerEvents = 'auto';
+                return;
+            }
+
+            const audioUrl = 'https://drive.google.com/uc?export=download&id=' + trackId;
+            
+            document.getElementById('trackNumber').textContent = 'Track ' + (currentTrack + 1) + ' of ' + tracks.length;
+            setStatus('Loading...', 'playing');
+
+            const audio = new Audio(audioUrl);
+            audio.preload = 'auto';
+
+            audio.play().then(() => {
+                isPlaying = true;
+                setStatus('Now playing...', 'playing');
+                btn.style.pointerEvents = 'auto';
+
+                audio.onended = () => {
+                    isPlaying = false;
+                    currentTrack++;
+                    if (currentTrack < tracks.length) {
+                        setStatus('Tap play for next track', '');
+                        document.getElementById('trackNumber').textContent = 'Track ' + (currentTrack + 1) + ' of ' + tracks.length;
+                    } else {
+                        setStatus('All tracks complete! 🎉', '');
+                        currentTrack = 0;
+                    }
+                };
+
+                audio.onerror = () => {
+                    showError('Cannot play this track. Make sure the file is shared publicly.');
+                    btn.style.pointerEvents = 'auto';
+                };
+
+            }).catch(err => {
+                console.error(err);
+                
+                if (err.name === 'NotAllowedError') {
+                    setStatus('Tap anywhere to enable audio', 'error');
+                } else {
+                    openInDrive(trackId, btn);
+                }
+            });
+        }
+
+        function openInDrive(trackId, btn) {
+            setStatus('Opening in Google Drive...', 'error');
+            setTimeout(() => {
+                window.open('https://drive.google.com/file/d/' + trackId + '/view', '_blank');
+                btn.style.pointerEvents = 'auto';
+            }, 1000);
+        }
+
+        function setStatus(message, type) {
+            const status = document.getElementById('trackStatus');
+            status.textContent = message;
+            status.className = 'status ' + type;
+        }
+
+        function showError(message) {
+            setStatus(message, 'error');
+        }
+
+        window.addEventListener('DOMContentLoaded', loadTracks);
+    </script>
+</body>
+</html>
