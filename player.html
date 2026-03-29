@@ -29,20 +29,44 @@
             padding: 40px 30px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
             text-align: center;
-            max-width: 400px;
+            max-width: 500px;
             width: 100%;
             margin-bottom: 20px;
         }
 
         h1 {
             color: #333;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             font-size: 24px;
         }
 
-        .play-btn {
-            width: 120px;
-            height: 120px;
+        .track-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 25px 0;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+
+        .track-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            transition: background 0.3s;
+        }
+
+        .track-item:hover {
+            background: #f0f0f0;
+        }
+
+        .track-btn {
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
@@ -50,66 +74,87 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
+            flex-shrink: 0;
             transition: all 0.3s;
-            -webkit-tap-highlight-color: transparent;
         }
 
-        .play-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        .track-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
 
-        .play-btn:active {
+        .track-btn:active {
             transform: scale(0.95);
         }
 
-        .play-btn.disabled {
+        .track-btn.disabled {
             background: #cccccc;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
         }
 
-        .play-btn.disabled:hover {
-            transform: none;
-            box-shadow: none;
+        .track-btn.playing {
+            animation: pulse 1.5s infinite;
         }
 
-        .play-icon {
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(102, 126, 234, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0); }
+        }
+
+        .track-btn .play-icon {
             width: 0;
             height: 0;
-            border-left: 35px solid white;
-            border-top: 22px solid transparent;
-            border-bottom: 22px solid transparent;
-            margin-left: 8px;
+            border-left: 20px solid white;
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            margin-left: 4px;
         }
 
-        .track-info {
-            color: #666;
-            font-size: 14px;
-            margin-top: 20px;
-        }
-
-        .track-number {
-            color: #333;
+        .track-label {
+            flex: 1;
             font-weight: 600;
-            font-size: 16px;
-            margin-bottom: 5px;
+            color: #333;
+            font-size: 15px;
+            text-align: left;
         }
 
-        .spinner {
+        .track-status {
+            font-size: 12px;
+            color: #666;
+            min-width: 70px;
+            text-align: right;
+        }
+
+        .track-status.playing {
+            color: #2e7d32;
+            font-weight: 500;
+        }
+
+        .track-status.complete {
+            color: #1565c0;
+            font-weight: 500;
+        }
+
+        .track-status.error {
+            color: #c62828;
+            font-weight: 500;
+        }
+
+        .track-spinner {
             display: none;
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f0f0f0;
-            border-top: 4px solid #667eea;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f0f0f0;
+            border-top: 2px solid #667eea;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 20px auto;
+            flex-shrink: 0;
         }
 
-        .spinner.show {
+        .track-spinner.show {
             display: block;
         }
 
@@ -118,32 +163,27 @@
             100% { transform: rotate(360deg); }
         }
 
-        .status {
-            margin-top: 15px;
-            padding: 12px;
-            border-radius: 8px;
+        .stop-all-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
             font-size: 14px;
-            font-weight: 500;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s;
         }
 
-        .status.playing {
-            background: #e8f5e9;
-            color: #2e7d32;
+        .stop-all-btn:hover {
+            background: #ee5a5a;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
         }
 
-        .status.waiting {
-            background: #fff3e0;
-            color: #e65100;
-        }
-
-        .status.error {
-            background: #ffebee;
-            color: #c62828;
-        }
-
-        .status.complete {
-            background: #e3f2fd;
-            color: #1565c0;
+        .stop-all-btn:active {
+            transform: translateY(0);
         }
 
         .instructions {
@@ -170,15 +210,24 @@
                 padding: 30px 20px;
             }
 
-            .play-btn {
-                width: 100px;
-                height: 100px;
+            .track-btn {
+                width: 45px;
+                height: 45px;
             }
 
-            .play-icon {
-                border-left-width: 28px;
-                border-top-width: 18px;
-                border-bottom-width: 18px;
+            .track-btn .play-icon {
+                border-left-width: 18px;
+                border-top-width: 10px;
+                border-bottom-width: 10px;
+            }
+
+            .track-label {
+                font-size: 14px;
+            }
+
+            .track-status {
+                font-size: 11px;
+                min-width: 60px;
             }
         }
     </style>
@@ -186,16 +235,10 @@
 <body>
     <div class="player">
         <h1>🎵 e-Orch Companion</h1>
-        <button class="play-btn" id="playBtn" onclick="handlePlay()">
-            <div class="play-icon"></div>
-        </button>
-        <div id="spinner" class="spinner"></div>
-        <div class="track-info">
-            <div class="track-number" id="trackNumber">Track 1</div>
-            <div id="trackStatus">Tap the play button to listen</div>
-        </div>
+        <div id="trackList" class="track-list"></div>
+        <button class="stop-all-btn" onclick="stopAll()">⏹ Stop All</button>
         <div class="instructions">
-            Tap play to start • Each tap plays the next track
+            Tap any track to play • Multiple tracks can overlap
         </div>
     </div>
 
@@ -206,10 +249,9 @@
 
     <script>
         let tracks = [];
-        let currentTrack = 0;
-        let isPlaying = false;
-        let audioElement = null;
-        let loadTimeout = null;
+        let audioElements = {};
+        let trackStates = {};
+        let timeouts = {};
 
         function loadTracks() {
             try {
@@ -222,123 +264,151 @@
                 }
 
                 if (tracks.length === 0) {
-                    showError('No audio tracks found');
-                } else {
-                    updateTrackNumber();
+                    document.getElementById('trackList').innerHTML = 
+                        '<p style="color: #c62828;">No audio tracks found</p>';
+                    return;
                 }
+
+                renderTrackList();
             } catch (e) {
-                showError('Error loading tracks');
                 console.error(e);
+                document.getElementById('trackList').innerHTML = 
+                    '<p style="color: #c62828;">Error loading tracks</p>';
             }
+        }
+
+        function renderTrackList() {
+            const container = document.getElementById('trackList');
+            container.innerHTML = '';
+
+            tracks.forEach((track, index) => {
+                const item = document.createElement('div');
+                item.className = 'track-item';
+                item.innerHTML = `
+                    <button class="track-btn" id="btn-${index}" onclick="playTrack(${index})">
+                        <div class="play-icon"></div>
+                    </button>
+                    <div class="track-label">Track ${index + 1}</div>
+                    <div class="track-spinner" id="spinner-${index}"></div>
+                    <div class="track-status" id="status-${index}">Ready</div>
+                `;
+                container.appendChild(item);
+                
+                trackStates[index] = 'idle';
+                audioElements[index] = null;
+                timeouts[index] = null;
+            });
         }
 
         function convertDropboxLink(url) {
-            // Remove ?dl=0 or &dl=0 parameters
             url = url.replace(/[?&]dl=\d+/, '');
-            // Replace domain for direct streaming
             return url.replace('www.dropbox.com', 'dl.dropboxusercontent.com');
         }
 
-        function updateTrackNumber() {
-            document.getElementById('trackNumber').textContent = 'Track ' + (currentTrack + 1) + ' of ' + tracks.length;
-        }
-
-        function handlePlay() {
-            if (tracks.length === 0) {
-                showError('No tracks available');
+        function playTrack(index) {
+            if (trackStates[index] === 'playing') {
                 return;
             }
 
-            const btn = document.getElementById('playBtn');
-            
-            if (btn.classList.contains('disabled')) {
-                if (currentTrack < tracks.length - 1) {
-                    currentTrack++;
-                    updateTrackNumber();
-                    resetButton();
-                    setTimeout(() => handlePlay(), 100);
-                }
-                return;
+            if (trackStates[index] === 'complete') {
+                resetTrack(index);
             }
 
-            if (isPlaying) {
-                return;
-            }
+            const btn = document.getElementById(`btn-${index}`);
+            const spinner = document.getElementById(`spinner-${index}`);
+            const status = document.getElementById(`status-${index}`);
 
             btn.classList.add('disabled');
+            spinner.classList.add('show');
+            status.textContent = 'Loading...';
+            status.className = 'track-status';
+            trackStates[index] = 'loading';
 
-            const originalUrl = tracks[currentTrack];
-            const audioUrl = convertDropboxLink(originalUrl);
+            const audioUrl = convertDropboxLink(tracks[index]);
             
-            console.log('Original URL:', originalUrl);
-            console.log('Converted URL:', audioUrl);
-            
-            // Show spinner
-            document.getElementById('spinner').classList.add('show');
-            setStatus('Loading...', 'playing');
+            console.log(`Playing Track ${index + 1}:`, audioUrl);
 
-            audioElement = new Audio(audioUrl);
-            audioElement.preload = 'auto';
-            
-            // 5-second timeout
-            loadTimeout = setTimeout(() => {
-                document.getElementById('spinner').classList.remove('show');
-                showError('Loading timed out. Check your internet and Dropbox link.');
+            const audio = new Audio(audioUrl);
+            audio.preload = 'auto';
+            audioElements[index] = audio;
+
+            timeouts[index] = setTimeout(() => {
+                spinner.classList.remove('show');
+                status.textContent = 'Timeout';
+                status.className = 'track-status error';
                 btn.classList.remove('disabled');
-                if (audioElement) {
-                    audioElement.pause();
-                }
+                trackStates[index] = 'idle';
+                audio.pause();
             }, 5000);
-            
-            audioElement.oncanplay = () => {
-                clearTimeout(loadTimeout);
-                document.getElementById('spinner').classList.remove('show');
+
+            audio.oncanplay = () => {
+                clearTimeout(timeouts[index]);
+                spinner.classList.remove('show');
             };
 
-            audioElement.play().then(() => {
-                isPlaying = true;
-                setStatus('Now playing...', 'playing');
+            audio.play().then(() => {
+                trackStates[index] = 'playing';
+                btn.classList.remove('disabled');
+                btn.classList.add('playing');
+                status.textContent = 'Playing...';
+                status.className = 'track-status playing';
 
-                audioElement.onended = () => {
-                    isPlaying = false;
+                audio.onended = () => {
+                    trackStates[index] = 'complete';
+                    btn.classList.remove('playing');
                     btn.classList.add('disabled');
-                    
-                    if (currentTrack < tracks.length - 1) {
-                        setStatus('Tap for next track', 'waiting');
-                    } else {
-                        setStatus('All tracks complete! 🎉', 'complete');
-                        currentTrack = 0;
-                    }
+                    status.textContent = 'Complete';
+                    status.className = 'track-status complete';
                 };
 
-                audioElement.onerror = () => {
-                    console.error('Audio error');
-                    showError('Cannot play this track. Please check the Dropbox link and try again.');
+                audio.onerror = () => {
+                    trackStates[index] = 'idle';
                     btn.classList.remove('disabled');
+                    status.textContent = 'Error';
+                    status.className = 'track-status error';
                 };
 
             }).catch(err => {
                 console.error('Play error:', err);
-                clearTimeout(loadTimeout);
-                document.getElementById('spinner').classList.remove('show');
-                showError('Cannot play this track. Please check the Dropbox link and try again.');
+                clearTimeout(timeouts[index]);
+                spinner.classList.remove('show');
+                trackStates[index] = 'idle';
                 btn.classList.remove('disabled');
+                status.textContent = 'Error';
+                status.className = 'track-status error';
             });
         }
 
-        function resetButton() {
-            const btn = document.getElementById('playBtn');
-            btn.classList.remove('disabled');
+        function resetTrack(index) {
+            const btn = document.getElementById(`btn-${index}`);
+            const status = document.getElementById(`status-${index}`);
+            const spinner = document.getElementById(`spinner-${index}`);
+            
+            btn.classList.remove('disabled', 'playing');
+            spinner.classList.remove('show');
+            status.textContent = 'Ready';
+            status.className = 'track-status';
+            trackStates[index] = 'idle';
+            
+            if (timeouts[index]) {
+                clearTimeout(timeouts[index]);
+                timeouts[index] = null;
+            }
+            
+            if (audioElements[index]) {
+                audioElements[index].pause();
+                audioElements[index] = null;
+            }
         }
 
-        function setStatus(message, type) {
-            const status = document.getElementById('trackStatus');
-            status.textContent = message;
-            status.className = 'status ' + type;
-        }
-
-        function showError(message) {
-            setStatus(message, 'error');
+        function stopAll() {
+            tracks.forEach((_, index) => {
+                if (audioElements[index]) {
+                    audioElements[index].pause();
+                    audioElements[index].currentTime = 0;
+                }
+                resetTrack(index);
+            });
         }
 
         function updateLastModified() {
