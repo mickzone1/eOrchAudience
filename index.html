@@ -772,18 +772,6 @@
 
         <button id="addBtn" class="btn btn-add" onclick="addInput()">+ Add Another Link</button>
 
-        <div class="terms-section">
-            <label>
-                <input type="checkbox" id="termsCheckbox">
-                <span>
-                    <strong>I agree to the Terms:</strong> We cannot guarantee Dropbox link availability or system uptime. No compensation for service interruptions. QR codes may stop working if links are deleted. Service provided "as is" without warranties.
-                </span>
-            </label>
-            <p id="termsError" style="color: #ff6b6b; font-size: 13px; margin-top: 8px; display: none;">
-                Please agree to the terms before generating QR code
-            </p>
-        </div>
-
         <div class="theme-selector" style="margin-top: 25px;">
             <h3>🎨 Choose Player Theme</h3>
             <div class="theme-swatch-container">
@@ -810,6 +798,18 @@
                 </div>
             </div>
             <input type="hidden" id="selectedTheme" value="blue">
+        </div>
+        
+        <div class="terms-section">
+            <label>
+                <input type="checkbox" id="termsCheckbox">
+                <span>
+                    <strong>I agree to the Terms:</strong> We cannot guarantee Dropbox link availability or system uptime. No compensation for service interruptions. QR codes may stop working if links are deleted. Service provided "as is" without warranties.
+                </span>
+            </label>
+            <p id="termsError" style="color: #ff6b6b; font-size: 13px; margin-top: 8px; display: none;">
+                Please agree to the terms before generating QR code
+            </p>
         </div>
         
         <div style="margin-top: 20px;">
