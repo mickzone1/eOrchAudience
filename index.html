@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audio QR Code Generator</title>
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -366,6 +366,8 @@
     </div>
 
     <script>
+        console.log('Script loaded, QRCode available:', typeof QRCode !== 'undefined');
+        
         let linkCount = 1;
         const maxLinks = 5;
         let generatedLinks = [];
@@ -415,6 +417,13 @@
         }
 
         function generateQR() {
+            console.log('generateQR called');
+            
+            if (typeof QRCode === 'undefined') {
+                alert('QR code library not loaded. Please refresh the page.');
+                return;
+            }
+
             const inputs = document.querySelectorAll('.link-input');
             const wrappers = document.querySelectorAll('.input-wrapper');
             let validLinks = [];
@@ -423,6 +432,7 @@
 
             inputs.forEach((input, index) => {
                 const url = input.value.trim();
+                console.log('Input ' + index + ':', url);
                 if (url) {
                     if (!isValidGoogleDriveLink(url)) {
                         wrappers[index].classList.add('error');
@@ -432,6 +442,8 @@
                 }
             });
 
+            console.log('Valid links:', validLinks);
+
             if (validLinks.length === 0) {
                 alert('Please enter at least one Google Drive link');
                 return;
@@ -440,12 +452,13 @@
             generatedLinks = validLinks;
 
             const fullUrl = `https://mickzone1.github.io/eOrchAudience/player.html#data=${btoa(JSON.stringify(validLinks))}`;
+            console.log('Full URL:', fullUrl);
 
-            const canvas = document.getElementById('qrCanvas');
-            canvas.innerHTML = '';
+            const qrContainer = document.getElementById('qrCanvas');
+            qrContainer.innerHTML = '';
 
             try {
-                new QRCode(canvas, {
+                const qr = new QRCode(qrContainer, {
                     text: fullUrl,
                     width: 300,
                     height: 300,
@@ -454,6 +467,7 @@
                     correctLevel: QRCode.CorrectLevel.M
                 });
 
+                console.log('QR Code generated');
                 displayAudioList(validLinks);
                 document.getElementById('linkInputs').parentElement.style.display = 'none';
                 document.getElementById('addBtn').style.display = 'none';
