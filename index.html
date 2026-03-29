@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audio QR Code Generator</title>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -138,12 +138,19 @@
             display: block;
         }
 
-        .qr-canvas {
+        #qrCanvas {
             margin: 20px auto;
-            display: block;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             border: 2px solid #e0e0e0;
             border-radius: 12px;
             padding: 10px;
+            min-height: 300px;
+        }
+
+        #qrCanvas img {
+            display: block;
         }
 
         .btn-download {
@@ -348,7 +355,7 @@
             <h2 style="color: #333; font-size: 20px; margin-bottom: 10px;">Your QR Code is Ready!</h2>
             <p style="color: #666; font-size: 14px; margin-bottom: 15px;">Scan to listen to your audio files</p>
             
-            <canvas id="qrCanvas" class="qr-canvas"></canvas>
+            <div id="qrCanvas"></div>
             
             <div id="audioList" class="audio-list"></div>
             
@@ -432,29 +439,30 @@
 
             generatedLinks = validLinks;
 
-            const playerUrl = generatePlayerPage(validLinks);
             const fullUrl = `https://mickzone1.github.io/eOrchAudience/player.html#data=${btoa(JSON.stringify(validLinks))}`;
 
-            QRCode.toCanvas(document.getElementById('qrCanvas'), fullUrl, {
-                width: 300,
-                margin: 2,
-                color: {
-                    dark: '#333333',
-                    light: '#ffffff'
-                }
-            }, function(error) {
-                if (error) {
-                    console.error(error);
-                    alert('Error generating QR code');
-                    return;
-                }
+            const canvas = document.getElementById('qrCanvas');
+            canvas.innerHTML = '';
+
+            try {
+                new QRCode(canvas, {
+                    text: fullUrl,
+                    width: 300,
+                    height: 300,
+                    colorDark: '#333333',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.M
+                });
 
                 displayAudioList(validLinks);
                 document.getElementById('linkInputs').parentElement.style.display = 'none';
                 document.getElementById('addBtn').style.display = 'none';
                 document.getElementById('submitBtn').style.display = 'none';
                 document.getElementById('qrSection').classList.add('show');
-            });
+            } catch (error) {
+                console.error('QR Code generation error:', error);
+                alert('Error generating QR code: ' + error.message);
+            }
         }
 
         function displayAudioList(links) {
@@ -474,11 +482,17 @@
         }
 
         function downloadQR() {
-            const canvas = document.getElementById('qrCanvas');
-            const link = document.createElement('a');
-            link.download = 'audio-qr-code.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+            const qrContainer = document.getElementById('qrCanvas');
+            const img = qrContainer.querySelector('img');
+            
+            if (img && img.src) {
+                const link = document.createElement('a');
+                link.download = 'audio-qr-code.png';
+                link.href = img.src;
+                link.click();
+            } else {
+                alert('QR code not found. Please try generating it again.');
+            }
         }
 
         function backToEditor() {
