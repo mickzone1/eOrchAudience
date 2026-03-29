@@ -334,6 +334,18 @@
             transform: scale(1.1);
         }
 
+        .logo-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .logo {
+            max-width: 200px;
+            width: 100%;
+            height: auto;
+            display: inline-block;
+        }
+
         .theme-preview {
             margin-top: 20px;
             padding: 20px;
@@ -521,9 +533,19 @@
             border-top: 1px solid #e0e0e0;
         }
 
+        @media (max-width: 768px) {
+            .logo {
+                max-width: 150px;
+            }
+        }
+
         @media (max-width: 480px) {
             .password-box {
                 padding: 30px 20px;
+            }
+
+            .logo {
+                max-width: 120px;
             }
         }
     </style>
@@ -550,6 +572,9 @@
     </div>
 
     <div class="container">
+        <div class="logo-container">
+            <img src="logo.png" alt="e-Orch Logo" class="logo">
+        </div>
         <h1>e-Orch Ambience</h1>
         <p class="subtitle">Engage your audience with any sound</p>
 

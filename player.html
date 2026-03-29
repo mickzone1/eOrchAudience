@@ -238,6 +238,18 @@
             100% { transform: rotate(360deg); }
         }
 
+        .logo-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .logo {
+            max-width: 200px;
+            width: 100%;
+            height: auto;
+            display: inline-block;
+        }
+
         .stop-all-btn {
             background: #ff6b6b;
             color: white;
@@ -272,6 +284,12 @@
             margin: 4px 0;
         }
 
+        @media (max-width: 768px) {
+            .logo {
+                max-width: 150px;
+            }
+        }
+
         @media (max-width: 480px) {
             .player {
                 padding: 30px 20px;
@@ -301,11 +319,18 @@
                 padding: 10px 16px;
                 font-size: 13px;
             }
+
+            .logo {
+                max-width: 120px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="player">
+        <div class="logo-container">
+            <img src="logo.png" alt="e-Orch Logo" class="logo">
+        </div>
         <h1>e-Orch Ambience</h1>
         <div id="preloadStatus" class="preload-status preloading">⏳ Preloading audio for instant playback...</div>
         <div id="trackList" class="track-list"></div>
