@@ -450,7 +450,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--theme-gradient);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -664,7 +664,7 @@
     </div>
 
     <div style="text-align: center; color: rgba(255,255,255,0.8); font-size: 13px; margin-top: 20px;">
-        <p>Last updated: <span id="lastUpdated"></span></p>
+        <p>Version <span id="version"></span></p>
         <p style="margin-top: 8px;">This application is developed by e-Orch Team@Innovative Music Zentre</p>
     </div>
 
@@ -932,19 +932,17 @@
             generatedLinks = [];
         }
 
-        function updateLastModified() {
-            const lastModified = new Date(document.lastModified);
-            const options = { 
-                year: 'numeric', 
-                month: 'short', 
-                day: 'numeric', 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            };
-            document.getElementById('lastUpdated').textContent = lastModified.toLocaleDateString('en-US', options);
+        function updateVersion() {
+            const now = new Date();
+            const version = now.getFullYear() + 
+                           String(now.getMonth() + 1).padStart(2, '0') + 
+                           String(now.getDate()).padStart(2, '0') + 
+                           String(now.getHours()).padStart(2, '0') + 
+                           String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('version').textContent = version;
         }
 
-        updateLastModified();
+        updateVersion();
     </script>
 </body>
 </html>
