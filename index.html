@@ -472,6 +472,16 @@
             width: 100%;
         }
 
+        .password-modal .logo {
+            max-width: 180px;
+        }
+
+        @media (max-width: 480px) {
+            .password-modal .logo {
+                max-width: 140px;
+            }
+        }
+
         .password-box h2 {
             color: #333;
             margin-bottom: 10px;
@@ -558,7 +568,9 @@
     <!-- Password Protection Modal -->
     <div id="passwordModal" class="password-modal">
         <div class="password-box">
-            <h2>🎵 e-Orch Ambience</h2>
+            <div class="logo-container" style="margin-bottom: 15px;">
+                <img src="logo1.png" alt="e-Orch Logo" class="logo" style="max-width: 180px;">
+            </div>
             <p class="password-subtitle">Enter password to continue</p>
             
             <input type="password" id="passwordInput" placeholder="Password" 
