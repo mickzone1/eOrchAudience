@@ -316,9 +316,129 @@
                 width: 100%;
             }
         }
+
+        /* Password Modal Styles */
+        .password-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+
+        .password-modal.hidden {
+            display: none;
+        }
+
+        .password-box {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .password-box h2 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .password-subtitle {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+
+        .password-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .password-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .password-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .password-btn:active {
+            transform: translateY(0);
+        }
+
+        .password-error {
+            color: #c62828;
+            font-size: 14px;
+            margin-top: 15px;
+            min-height: 20px;
+        }
+
+        .password-footer {
+            color: #999;
+            font-size: 12px;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        @media (max-width: 480px) {
+            .password-box {
+                padding: 30px 20px;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Password Protection Modal -->
+    <div id="passwordModal" class="password-modal">
+        <div class="password-box">
+            <h2>🎵 e-Orch Ambience</h2>
+            <p class="password-subtitle">Enter password to continue</p>
+            
+            <input type="password" id="passwordInput" placeholder="Password" 
+                   class="password-input" autocomplete="off" 
+                   onkeydown="handlePasswordKey(event)">
+            
+            <button onclick="checkPassword()" class="password-btn">Enter</button>
+            
+            <p id="passwordError" class="password-error"></p>
+            
+            <p class="password-footer">
+                This application is developed by e-Orch Team@Innovative Music Zentre
+            </p>
+        </div>
+    </div>
+
     <div class="container">
         <h1>e-Orch Ambience</h1>
         <p class="subtitle">Engage your audience with any sound</p>
@@ -383,6 +503,44 @@
     </div>
 
     <script>
+        // ===== PASSWORD CONFIGURATION =====
+        const APP_PASSWORD = 'e-Orch2026'; // Change this password anytime
+        // ==================================
+
+        // Check if already authenticated
+        function checkAuth() {
+            if (sessionStorage.getItem('eOrchAuthenticated') === 'true') {
+                document.getElementById('passwordModal').classList.add('hidden');
+            }
+        }
+
+        // Check password
+        function checkPassword() {
+            const input = document.getElementById('passwordInput');
+            const error = document.getElementById('passwordError');
+            
+            if (input.value === APP_PASSWORD) {
+                // Password correct
+                sessionStorage.setItem('eOrchAuthenticated', 'true');
+                document.getElementById('passwordModal').classList.add('hidden');
+            } else {
+                // Password wrong
+                error.textContent = 'Incorrect password. Please try again.';
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        // Allow Enter key to submit
+        function handlePasswordKey(event) {
+            if (event.key === 'Enter') {
+                checkPassword();
+            }
+        }
+
+        // Run on page load
+        checkAuth();
+
         let linkCount = 1;
         const maxLinks = 5;
         let generatedLinks = [];
