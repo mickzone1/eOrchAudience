@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>e-Orch Ambience - Audio Player</title>
     <style>
+        :root {
+            --primary-color: #667eea;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -13,7 +18,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--gradient);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -95,7 +100,7 @@
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--gradient);
             border: none;
             cursor: pointer;
             display: flex;
@@ -108,7 +113,7 @@
 
         .track-btn:hover {
             transform: scale(1.1);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
         }
 
         .track-btn:active {
@@ -167,7 +172,7 @@
         .progress-bar {
             height: 100%;
             width: 0%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--gradient);
             border-radius: 2px;
             transition: width 0.1s linear;
         }
@@ -324,6 +329,33 @@
         let stuckMonitors = {};
         let preloadProgress = 0;
         let totalTracks = 0;
+
+        // Color themes configuration
+        const colorThemes = {
+            purple: { primary: '#667eea', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+            blue: { primary: '#2196f3', gradient: 'linear-gradient(135deg, #2196f3 0%, #21cbf3 100%)' },
+            green: { primary: '#11998e', gradient: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' },
+            orange: { primary: '#f093fb', gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
+            teal: { primary: '#13547a', gradient: 'linear-gradient(135deg, #13547a 0%, #80d0c7 100%)' },
+            pink: { primary: '#ff758c', gradient: 'linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%)' }
+        };
+
+        function loadTheme() {
+            const params = new URLSearchParams(window.location.search);
+            const theme = params.get('theme') || 'purple';
+            
+            const themeData = colorThemes[theme] || colorThemes['purple'];
+            
+            // Apply CSS variables
+            document.documentElement.style.setProperty('--primary-color', themeData.primary);
+            document.documentElement.style.setProperty('--gradient', themeData.gradient);
+            
+            // Update reload button color
+            const reloadBtn = document.querySelector('button[onclick="location.reload()"]');
+            if (reloadBtn) {
+                reloadBtn.style.background = themeData.gradient;
+            }
+        }
 
         function loadTracks() {
             try {
@@ -677,6 +709,8 @@
 
         updateLastModified();
 
+        // Load theme before tracks
+        loadTheme();
         window.addEventListener('DOMContentLoaded', loadTracks);
     </script>
 </body>

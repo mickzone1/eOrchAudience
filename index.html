@@ -293,6 +293,116 @@
             white-space: nowrap;
         }
 
+        .theme-selector {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .theme-selector h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .theme-swatch-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .theme-swatch {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .theme-swatch:hover {
+            transform: scale(1.15);
+        }
+
+        .theme-swatch.selected {
+            border-color: #333;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            transform: scale(1.1);
+        }
+
+        .theme-preview {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .theme-preview h4 {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .preview-player {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .preview-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .preview-play-icon {
+            width: 0;
+            height: 0;
+            border-left: 14px solid white;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            margin-left: 3px;
+        }
+
+        .preview-info {
+            flex: 1;
+        }
+
+        .preview-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .preview-progress {
+            width: 100%;
+            height: 3px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .preview-progress-bar {
+            height: 100%;
+            width: 60%;
+            border-radius: 2px;
+        }
+
         @media (max-width: 480px) {
             .container {
                 padding: 20px;
@@ -453,6 +563,33 @@
             </ol>
         </div>
 
+        <div class="theme-selector">
+            <h3>🎨 Choose Player Theme</h3>
+            <div class="theme-swatch-container">
+                <div class="theme-swatch selected" onclick="selectTheme('purple')" style="background: linear-gradient(135deg, #667eea, #764ba2);" title="Purple"></div>
+                <div class="theme-swatch" onclick="selectTheme('blue')" style="background: linear-gradient(135deg, #2196f3, #21cbf3);" title="Blue"></div>
+                <div class="theme-swatch" onclick="selectTheme('green')" style="background: linear-gradient(135deg, #11998e, #38ef7d);" title="Green"></div>
+                <div class="theme-swatch" onclick="selectTheme('orange')" style="background: linear-gradient(135deg, #f093fb, #f5576c);" title="Orange"></div>
+                <div class="theme-swatch" onclick="selectTheme('teal')" style="background: linear-gradient(135deg, #13547a, #80d0c7);" title="Teal"></div>
+                <div class="theme-swatch" onclick="selectTheme('pink')" style="background: linear-gradient(135deg, #ff758c, #ff7eb3);" title="Pink"></div>
+            </div>
+            <div class="theme-preview">
+                <h4>Preview</h4>
+                <div class="preview-player">
+                    <button class="preview-btn" id="previewBtn" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                        <div class="preview-play-icon"></div>
+                    </button>
+                    <div class="preview-info">
+                        <div class="preview-label">Track 1</div>
+                        <div class="preview-progress">
+                            <div class="preview-progress-bar" id="previewProgressBar" style="background: linear-gradient(135deg, #667eea, #764ba2);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" id="selectedTheme" value="purple">
+        </div>
+
         <div class="permission-alert">
             <h3>📁 How to Get Dropbox Links</h3>
             <ol>
@@ -540,6 +677,63 @@
 
         // Run on page load
         checkAuth();
+
+        // ===== COLOR THEME CONFIGURATION =====
+        const colorThemes = {
+            purple: { primary: '#667eea', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+            blue: { primary: '#2196f3', gradient: 'linear-gradient(135deg, #2196f3 0%, #21cbf3 100%)' },
+            green: { primary: '#11998e', gradient: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' },
+            orange: { primary: '#f093fb', gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
+            teal: { primary: '#13547a', gradient: 'linear-gradient(135deg, #13547a 0%, #80d0c7 100%)' },
+            pink: { primary: '#ff758c', gradient: 'linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%)' }
+        };
+
+        let selectedTheme = localStorage.getItem('eOrchTheme') || 'purple';
+
+        function selectTheme(theme) {
+            selectedTheme = theme;
+            localStorage.setItem('eOrchTheme', theme);
+            
+            // Update selected state
+            document.querySelectorAll('.theme-swatch').forEach(swatch => {
+                swatch.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+            
+            // Update preview
+            updatePreview(theme);
+        }
+
+        function updatePreview(theme) {
+            const themeData = colorThemes[theme];
+            const previewBtn = document.getElementById('previewBtn');
+            const previewBar = document.getElementById('previewProgressBar');
+            
+            if (previewBtn && previewBar) {
+                previewBtn.style.background = themeData.gradient;
+                previewBar.style.background = themeData.gradient;
+            }
+            
+            // Update hidden input for QR generation
+            document.getElementById('selectedTheme').value = theme;
+        }
+
+        // Initialize theme on page load
+        function initTheme() {
+            document.getElementById('selectedTheme').value = selectedTheme;
+            
+            // Set selected swatch
+            document.querySelectorAll('.theme-swatch').forEach((swatch, index) => {
+                const themes = ['purple', 'blue', 'green', 'orange', 'teal', 'pink'];
+                if (themes[index] === selectedTheme) {
+                    swatch.classList.add('selected');
+                }
+            });
+            
+            updatePreview(selectedTheme);
+        }
+
+        initTheme();
 
         let linkCount = 1;
         const maxLinks = 5;
@@ -632,7 +826,8 @@
                 name: trackNames[index]
             }));
 
-            const fullUrl = `https://mickzone1.github.io/eOrchAudience/player.html?data=${btoa(JSON.stringify(trackData))}`;
+            const theme = document.getElementById('selectedTheme').value;
+            const fullUrl = `https://mickzone1.github.io/eOrchAudience/player.html?data=${btoa(JSON.stringify(trackData))}&theme=${theme}`;
 
             const qrContainer = document.getElementById('qrCanvas');
             const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(fullUrl)}`;
