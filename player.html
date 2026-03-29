@@ -79,6 +79,7 @@
             transition: background 0.3s;
             opacity: 0.5;
             pointer-events: none;
+            align-items: flex-start;
         }
 
         .track-item.loaded {
@@ -146,6 +147,38 @@
             color: #333;
             font-size: 15px;
             text-align: left;
+        }
+
+        .track-info {
+            flex: 1;
+            text-align: left;
+            min-width: 0;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 3px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            margin: 6px 0 4px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+            transition: width 0.1s linear;
+        }
+
+        .progress-bar.playing {
+            animation: progressPulse 2s infinite;
+        }
+
+        @keyframes progressPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
 
         .track-status {
@@ -258,6 +291,11 @@
                 font-size: 11px;
                 min-width: 60px;
             }
+            
+            .stop-all-btn {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
         }
     </style>
 </head>
@@ -266,7 +304,10 @@
         <h1>e-Orch Ambience</h1>
         <div id="preloadStatus" class="preload-status preloading">⏳ Preloading audio for instant playback...</div>
         <div id="trackList" class="track-list"></div>
-        <button class="stop-all-btn" onclick="stopAll()">⏹ Stop All</button>
+        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+            <button class="stop-all-btn" onclick="stopAll()">⏹ Stop All</button>
+            <button class="stop-all-btn" onclick="location.reload()" style="background: #667eea;">🔄 Reload</button>
+        </div>
     </div>
 
     <div class="footer">
@@ -325,7 +366,12 @@
                     <button class="track-btn" id="btn-${index}" onclick="playTrack(${index})">
                         <div class="play-icon"></div>
                     </button>
-                    <div class="track-label">${trackName}</div>
+                    <div class="track-info">
+                        <div class="track-label">${trackName}</div>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="progress-${index}"></div>
+                        </div>
+                    </div>
                     <div class="track-spinner" id="spinner-${index}"></div>
                     <div class="track-status" id="status-${index}">Loading...</div>
                 `;
@@ -481,7 +527,17 @@
 
             audio.ontimeupdate = () => {
                 const currentTime = audio.currentTime;
+                const duration = audio.duration || 0;
                 
+                // Update progress bar
+                const progressEl = document.getElementById(`progress-${index}`);
+                if (progressEl && duration > 0) {
+                    const percent = (currentTime / duration) * 100;
+                    progressEl.style.width = `${percent}%`;
+                    progressEl.classList.add('playing');
+                }
+                
+                // Stuck detection
                 if (currentTime === lastTimeUpdate && playbackFlags[index]) {
                     stuckCounter++;
                     console.log('Playback stuck counter:', stuckCounter, 'for track', index + 1);
@@ -522,6 +578,13 @@
                     btn.classList.add('disabled');
                     status.textContent = 'Complete';
                     status.className = 'track-status complete';
+                    
+                    // Set progress to 100%
+                    const progressEl = document.getElementById(`progress-${index}`);
+                    if (progressEl) {
+                        progressEl.style.width = '100%';
+                        progressEl.classList.remove('playing');
+                    }
                 };
 
                 audio.onerror = () => {
@@ -555,12 +618,18 @@
             const btn = document.getElementById(`btn-${index}`);
             const status = document.getElementById(`status-${index}`);
             const spinner = document.getElementById(`spinner-${index}`);
+            const progressEl = document.getElementById(`progress-${index}`);
             
             btn.classList.remove('disabled', 'playing');
             spinner.classList.remove('show');
             status.textContent = 'Ready';
             status.className = 'track-status ready';
             trackStates[index] = 'ready';
+            
+            if (progressEl) {
+                progressEl.style.width = '0%';
+                progressEl.classList.remove('playing');
+            }
             
             if (timeouts[index]) {
                 clearTimeout(timeouts[index]);
@@ -582,6 +651,14 @@
                     audioElements[index].pause();
                     audioElements[index].currentTime = 0;
                 }
+                
+                // Reset progress bar
+                const progressEl = document.getElementById(`progress-${index}`);
+                if (progressEl) {
+                    progressEl.style.width = '0%';
+                    progressEl.classList.remove('playing');
+                }
+                
                 resetTrack(index);
             });
         }
