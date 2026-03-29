@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Player</title>
+    <title>e-Orch Companion - Audio Player</title>
     <style>
         * {
             box-sizing: border-box;
@@ -16,6 +16,7 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 20px;
@@ -30,6 +31,7 @@
             text-align: center;
             max-width: 400px;
             width: 100%;
+            margin-bottom: 20px;
         }
 
         h1 {
@@ -49,7 +51,7 @@
             align-items: center;
             justify-content: center;
             margin: 0 auto 20px;
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: all 0.3s;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -60,6 +62,18 @@
 
         .play-btn:active {
             transform: scale(0.95);
+        }
+
+        .play-btn.disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .play-btn.disabled:hover {
+            transform: none;
+            box-shadow: none;
         }
 
         .play-icon {
@@ -86,9 +100,10 @@
 
         .status {
             margin-top: 15px;
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
-            font-size: 13px;
+            font-size: 14px;
+            font-weight: 500;
         }
 
         .status.playing {
@@ -96,17 +111,52 @@
             color: #2e7d32;
         }
 
+        .status.waiting {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
         .status.error {
             background: #ffebee;
             color: #c62828;
         }
 
+        .status.complete {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .fallback-btn {
+            display: none;
+            background: #f0f0f0;
+            color: #333;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-top: 15px;
+            cursor: pointer;
+            text-decoration: none;
+            inline-block: true;
+        }
+
+        .fallback-btn.show {
+            display: inline-block;
+        }
+
         .instructions {
-            margin-top: 25px;
-            padding-top: 20px;
+            margin-top: 15px;
+            padding-top: 15px;
             border-top: 1px solid #e0e0e0;
             color: #999;
             font-size: 12px;
+        }
+
+        .footer {
+            text-align: center;
+            color: rgba(255,255,255,0.9);
+            font-size: 13px;
+            margin-top: 10px;
         }
 
         @media (max-width: 480px) {
@@ -129,7 +179,7 @@
 </head>
 <body>
     <div class="player">
-        <h1>🎵 Audio Player</h1>
+        <h1>🎵 e-Orch Companion</h1>
         <button class="play-btn" id="playBtn" onclick="handlePlay()">
             <div class="play-icon"></div>
         </button>
@@ -137,30 +187,36 @@
             <div class="track-number" id="trackNumber">Track 1</div>
             <div id="trackStatus">Tap the play button to listen</div>
         </div>
+        <a id="fallbackLink" class="fallback-btn" target="_blank" rel="noopener">Open in Google Drive</a>
         <div class="instructions">
             Tap play to start • Each tap plays the next track
         </div>
+    </div>
+
+    <div class="footer">
+        This application is developed by Innovative Music Zentre
     </div>
 
     <script>
         let tracks = [];
         let currentTrack = 0;
         let isPlaying = false;
+        let audioElement = null;
 
         function loadTracks() {
             try {
-                const hash = window.location.hash.substring(1);
+                const hash = window.location.search.substring(1);
                 const params = new URLSearchParams(hash);
                 const data = params.get('data');
                 
                 if (data) {
                     tracks = JSON.parse(atob(data));
-                } else {
-                    tracks = hash.split(',').map(t => t.trim()).filter(t => t);
                 }
 
                 if (tracks.length === 0) {
                     showError('No audio tracks found');
+                } else {
+                    updateTrackNumber();
                 }
             } catch (e) {
                 showError('Error loading tracks');
@@ -182,6 +238,10 @@
             return null;
         }
 
+        function updateTrackNumber() {
+            document.getElementById('trackNumber').textContent = 'Track ' + (currentTrack + 1) + ' of ' + tracks.length;
+        }
+
         function handlePlay() {
             if (tracks.length === 0) {
                 showError('No tracks available');
@@ -189,63 +249,77 @@
             }
 
             const btn = document.getElementById('playBtn');
-            btn.style.pointerEvents = 'none';
+            
+            if (btn.classList.contains('disabled')) {
+                if (currentTrack < tracks.length - 1) {
+                    currentTrack++;
+                    updateTrackNumber();
+                    resetButton();
+                    setTimeout(() => handlePlay(), 100);
+                }
+                return;
+            }
+
+            if (isPlaying) {
+                return;
+            }
+
+            btn.classList.add('disabled');
 
             const trackId = extractFileId(tracks[currentTrack]);
             
             if (!trackId) {
                 showError('Invalid track link');
-                btn.style.pointerEvents = 'auto';
+                btn.classList.remove('disabled');
                 return;
             }
 
-            const audioUrl = 'https://drive.google.com/uc?export=download&id=' + trackId;
+            const audioUrl = 'https://drive.google.com/uc?export=download&confirm=t&id=' + trackId;
             
-            document.getElementById('trackNumber').textContent = 'Track ' + (currentTrack + 1) + ' of ' + tracks.length;
             setStatus('Loading...', 'playing');
 
-            const audio = new Audio(audioUrl);
-            audio.preload = 'auto';
+            audioElement = new Audio(audioUrl);
+            audioElement.preload = 'auto';
 
-            audio.play().then(() => {
+            audioElement.play().then(() => {
                 isPlaying = true;
                 setStatus('Now playing...', 'playing');
-                btn.style.pointerEvents = 'auto';
 
-                audio.onended = () => {
+                audioElement.onended = () => {
                     isPlaying = false;
-                    currentTrack++;
-                    if (currentTrack < tracks.length) {
-                        setStatus('Tap play for next track', '');
-                        document.getElementById('trackNumber').textContent = 'Track ' + (currentTrack + 1) + ' of ' + tracks.length;
+                    btn.classList.add('disabled');
+                    
+                    if (currentTrack < tracks.length - 1) {
+                        setStatus('Tap for next track', 'waiting');
                     } else {
-                        setStatus('All tracks complete! 🎉', '');
+                        setStatus('All tracks complete! 🎉', 'complete');
                         currentTrack = 0;
                     }
                 };
 
-                audio.onerror = () => {
-                    showError('Cannot play this track. Make sure the file is shared publicly.');
-                    btn.style.pointerEvents = 'auto';
+                audioElement.onerror = () => {
+                    showError('Cannot play this track. Make sure the file is shared as "Anyone with the link"');
+                    btn.classList.remove('disabled');
+                    showFallback(trackId);
                 };
 
             }).catch(err => {
                 console.error(err);
-                
-                if (err.name === 'NotAllowedError') {
-                    setStatus('Tap anywhere to enable audio', 'error');
-                } else {
-                    openInDrive(trackId, btn);
-                }
+                showError('Cannot play this track. Make sure the file is shared as "Anyone with the link"');
+                btn.classList.remove('disabled');
+                showFallback(trackId);
             });
         }
 
-        function openInDrive(trackId, btn) {
-            setStatus('Opening in Google Drive...', 'error');
-            setTimeout(() => {
-                window.open('https://drive.google.com/file/d/' + trackId + '/view', '_blank');
-                btn.style.pointerEvents = 'auto';
-            }, 1000);
+        function showFallback(trackId) {
+            const fallbackLink = document.getElementById('fallbackLink');
+            fallbackLink.href = 'https://drive.google.com/file/d/' + trackId + '/view';
+            fallbackLink.classList.add('show');
+        }
+
+        function resetButton() {
+            const btn = document.getElementById('playBtn');
+            btn.classList.remove('disabled');
         }
 
         function setStatus(message, type) {

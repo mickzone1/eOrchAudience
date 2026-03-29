@@ -309,7 +309,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎵 Audio QR Generator</h1>
+        <h1>🎵 e-Orch Companion</h1>
         <p class="subtitle">Create QR codes for your Google Drive audio files</p>
 
         <div class="permission-alert">
@@ -366,7 +366,8 @@
     </div>
 
     <div style="text-align: center; color: rgba(255,255,255,0.8); font-size: 13px; margin-top: 20px;">
-        Last updated: <span id="lastUpdated"></span>
+        <p>Last updated: <span id="lastUpdated"></span></p>
+        <p style="margin-top: 8px;">This application is developed by Innovative Music Zentre</p>
     </div>
 
     <script>
@@ -443,7 +444,7 @@
 
             generatedLinks = validLinks;
 
-            const fullUrl = `https://mickzone1.github.io/eOrchAudience/player.html#data=${btoa(JSON.stringify(validLinks))}`;
+            const fullUrl = `https://mickzone1.github.io/eOrchAudience/player.html?data=${btoa(JSON.stringify(validLinks))}`;
 
             const qrContainer = document.getElementById('qrCanvas');
             const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(fullUrl)}`;
