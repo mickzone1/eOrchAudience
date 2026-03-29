@@ -563,33 +563,6 @@
             </ol>
         </div>
 
-        <div class="theme-selector">
-            <h3>🎨 Choose Player Theme</h3>
-            <div class="theme-swatch-container">
-                <div class="theme-swatch selected" onclick="selectTheme('purple')" style="background: linear-gradient(135deg, #667eea, #764ba2);" title="Purple"></div>
-                <div class="theme-swatch" onclick="selectTheme('blue')" style="background: linear-gradient(135deg, #2196f3, #21cbf3);" title="Blue"></div>
-                <div class="theme-swatch" onclick="selectTheme('green')" style="background: linear-gradient(135deg, #11998e, #38ef7d);" title="Green"></div>
-                <div class="theme-swatch" onclick="selectTheme('orange')" style="background: linear-gradient(135deg, #f093fb, #f5576c);" title="Orange"></div>
-                <div class="theme-swatch" onclick="selectTheme('teal')" style="background: linear-gradient(135deg, #13547a, #80d0c7);" title="Teal"></div>
-                <div class="theme-swatch" onclick="selectTheme('pink')" style="background: linear-gradient(135deg, #ff758c, #ff7eb3);" title="Pink"></div>
-            </div>
-            <div class="theme-preview">
-                <h4>Preview</h4>
-                <div class="preview-player">
-                    <button class="preview-btn" id="previewBtn" style="background: linear-gradient(135deg, #667eea, #764ba2);">
-                        <div class="preview-play-icon"></div>
-                    </button>
-                    <div class="preview-info">
-                        <div class="preview-label">Track 1</div>
-                        <div class="preview-progress">
-                            <div class="preview-progress-bar" id="previewProgressBar" style="background: linear-gradient(135deg, #667eea, #764ba2);"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <input type="hidden" id="selectedTheme" value="purple">
-        </div>
-
         <div class="permission-alert">
             <h3>📁 How to Get Dropbox Links</h3>
             <ol>
@@ -615,6 +588,33 @@
         </div>
 
         <button id="addBtn" class="btn btn-add" onclick="addInput()">+ Add Another Link</button>
+
+        <div class="theme-selector" style="margin-top: 25px;">
+            <h3>🎨 Choose Player Theme</h3>
+            <div class="theme-swatch-container">
+                <div class="theme-swatch selected" onclick="selectTheme('purple')" style="background: linear-gradient(135deg, #667eea, #764ba2);" title="Purple"></div>
+                <div class="theme-swatch" onclick="selectTheme('blue')" style="background: linear-gradient(135deg, #2196f3, #21cbf3);" title="Blue"></div>
+                <div class="theme-swatch" onclick="selectTheme('green')" style="background: linear-gradient(135deg, #11998e, #38ef7d);" title="Green"></div>
+                <div class="theme-swatch" onclick="selectTheme('orange')" style="background: linear-gradient(135deg, #f093fb, #f5576c);" title="Orange"></div>
+                <div class="theme-swatch" onclick="selectTheme('teal')" style="background: linear-gradient(135deg, #13547a, #80d0c7);" title="Teal"></div>
+                <div class="theme-swatch" onclick="selectTheme('pink')" style="background: linear-gradient(135deg, #ff758c, #ff7eb3);" title="Pink"></div>
+            </div>
+            <div class="theme-preview">
+                <h4>Preview</h4>
+                <div class="preview-player">
+                    <button class="preview-btn" id="previewBtn" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                        <div class="preview-play-icon"></div>
+                    </button>
+                    <div class="preview-info">
+                        <div class="preview-label">Track 1</div>
+                        <div class="preview-progress">
+                            <div class="preview-progress-bar" id="previewProgressBar" style="background: linear-gradient(135deg, #667eea, #764ba2);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" id="selectedTheme" value="purple">
+        </div>
         
         <div style="margin-top: 20px;">
             <button id="submitBtn" class="btn btn-submit" onclick="generateQR()">Generate QR Code</button>
