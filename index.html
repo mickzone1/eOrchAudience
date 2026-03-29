@@ -350,6 +350,51 @@
             display: inline-block;
         }
 
+        .btn-sample {
+            background: linear-gradient(135deg, #09A7CC 0%, #09A7CC 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-sample:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(9, 167, 204, 0.4);
+        }
+
+        .btn-sample:active {
+            transform: translateY(0);
+        }
+
+        .btn-paste {
+            background: #f0f0f0;
+            color: #333;
+            border: none;
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .btn-paste:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-paste:active {
+            transform: scale(0.98);
+        }
+
         .theme-preview {
             margin-top: 20px;
             padding: 20px;
@@ -438,7 +483,8 @@
                 max-width: none;
             }
 
-            .btn-remove {
+            .btn-remove,
+            .btn-paste {
                 width: 100%;
             }
         }
@@ -561,6 +607,27 @@
             .logo {
                 max-width: 180px;
             }
+
+            .btn-sample {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .btn-paste {
+                padding: 14px 12px;
+                font-size: 13px;
+                width: 100%;
+            }
+
+            .input-group {
+                flex-wrap: wrap;
+            }
+
+            .track-name-input,
+            .link-input {
+                width: 100%;
+                max-width: none;
+            }
         }
     </style>
 </head>
@@ -617,11 +684,21 @@
             </p>
         </div>
 
+        <div style="text-align: center; margin: 20px 0;">
+            <button class="btn-sample" onclick="copySampleLink()">
+                🎵 Copy Sample Dropbox Link to Try
+            </button>
+            <p id="copyMessage" style="color: #2e7d32; font-size: 13px; margin-top: 8px; display: none;">
+                ✓ Link copied! Use the Paste button below
+            </p>
+        </div>
+
         <div id="linkInputs" class="link-inputs">
             <div class="input-wrapper">
                 <div class="input-group">
                     <input type="text" placeholder="Track name (optional)" class="track-name-input" style="max-width: 150px;">
                     <input type="url" placeholder="Paste Dropbox audio link here" class="link-input">
+                    <button type="button" class="btn-paste" onclick="pasteToInput(this)">📋 Paste</button>
                 </div>
                 <div class="error">Please enter a valid Dropbox link</div>
             </div>
@@ -719,6 +796,45 @@
         // Run on page load
         checkAuth();
 
+        // ===== SAMPLE DROPBOX LINK =====
+        const SAMPLE_DROPBOX_LINK = 'https://www.dropbox.com/scl/fi/52780o6pulu5ghrxa09kt/1_Inside-the-Walled-City-Park.wav?rlkey=hmqvpl73iamc1j5pe0sy8dn90&st=nv2n0whi&dl=0';
+
+        function copySampleLink() {
+            navigator.clipboard.writeText(SAMPLE_DROPBOX_LINK).then(() => {
+                const message = document.getElementById('copyMessage');
+                message.style.display = 'block';
+                setTimeout(() => {
+                    message.style.display = 'none';
+                }, 3000);
+            }).catch(err => {
+                const textArea = document.createElement('textarea');
+                textArea.value = SAMPLE_DROPBOX_LINK;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                const message = document.getElementById('copyMessage');
+                message.style.display = 'block';
+                setTimeout(() => {
+                    message.style.display = 'none';
+                }, 3000);
+            });
+        }
+
+        function pasteToInput(button) {
+            const inputGroup = button.closest('.input-group');
+            const linkInput = inputGroup.querySelector('.link-input');
+            
+            if (linkInput) {
+                linkInput.value = SAMPLE_DROPBOX_LINK;
+                linkInput.style.borderColor = '#2e7d32';
+                setTimeout(() => {
+                    linkInput.style.borderColor = '#e0e0e0';
+                }, 2000);
+            }
+        }
+
         // ===== COLOR THEME CONFIGURATION =====
         const colorThemes = {
             red: { name: 'Red Transition', primary: '#FF6B35', gradient: 'linear-gradient(135deg, #FF6B35 0%, #FF6B35 100%)' },
@@ -800,6 +916,7 @@
                 <div class="input-group">
                     <input type="text" placeholder="Track name (optional)" class="track-name-input" style="max-width: 150px;">
                     <input type="url" placeholder="Paste Dropbox audio link here" class="link-input">
+                    <button type="button" class="btn-paste" onclick="pasteToInput(this)">📋 Paste</button>
                     <button class="btn btn-remove" onclick="removeInput(this)">Remove</button>
                 </div>
                 <div class="error">Please enter a valid Dropbox link</div>
