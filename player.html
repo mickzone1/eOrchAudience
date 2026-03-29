@@ -237,13 +237,10 @@
         <h1>🎵 e-Orch Companion</h1>
         <div id="trackList" class="track-list"></div>
         <button class="stop-all-btn" onclick="stopAll()">⏹ Stop All</button>
-        <div class="instructions">
-            Tap any track to play • Multiple tracks can overlap
-        </div>
     </div>
 
     <div class="footer">
-        <p>This application is developed by Innovative Music Zentre</p>
+        <p>This application is developed by e-Orch Team@Innovative Music Zentre</p>
         <p>Last updated: <span id="lastUpdated"></span></p>
     </div>
 
@@ -282,13 +279,14 @@
             container.innerHTML = '';
 
             tracks.forEach((track, index) => {
+                const trackName = track.name || `Track ${index + 1}`;
                 const item = document.createElement('div');
                 item.className = 'track-item';
                 item.innerHTML = `
                     <button class="track-btn" id="btn-${index}" onclick="playTrack(${index})">
                         <div class="play-icon"></div>
                     </button>
-                    <div class="track-label">Track ${index + 1}</div>
+                    <div class="track-label">${trackName}</div>
                     <div class="track-spinner" id="spinner-${index}"></div>
                     <div class="track-status" id="status-${index}">Ready</div>
                 `;
@@ -324,7 +322,7 @@
             status.className = 'track-status';
             trackStates[index] = 'loading';
 
-            const audioUrl = convertDropboxLink(tracks[index]);
+            const audioUrl = convertDropboxLink(tracks[index].url);
             
             console.log(`Playing Track ${index + 1}:`, audioUrl);
 

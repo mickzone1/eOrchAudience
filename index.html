@@ -54,8 +54,8 @@
             align-items: center;
         }
 
-        input[type="url"] {
-            flex: 1;
+        input[type="url"],
+        input[type="text"] {
             padding: 14px 16px;
             border: 2px solid #e0e0e0;
             border-radius: 12px;
@@ -63,14 +63,23 @@
             transition: border-color 0.3s;
         }
 
-        input[type="url"]:focus {
+        input[type="url"]:focus,
+        input[type="text"]:focus {
             outline: none;
             border-color: #667eea;
         }
 
-        input[type="url"]::placeholder {
+        input[type="url"]::placeholder,
+        input[type="text"]::placeholder {
             color: #aaa;
         }
+
+        .track-name-input {
+            max-width: 150px;
+            flex-shrink: 0;
+        }
+
+
 
         .btn {
             padding: 14px 20px;
@@ -297,8 +306,10 @@
                 flex-wrap: wrap;
             }
 
+            .track-name-input,
             input[type="url"] {
                 width: 100%;
+                max-width: none;
             }
 
             .btn-remove {
@@ -339,6 +350,7 @@
         <div id="linkInputs" class="link-inputs">
             <div class="input-wrapper">
                 <div class="input-group">
+                    <input type="text" placeholder="Track name (optional)" class="track-name-input" style="max-width: 150px;">
                     <input type="url" placeholder="Paste Dropbox audio link here" class="link-input">
                 </div>
                 <div class="error">Please enter a valid Dropbox link</div>
@@ -367,7 +379,7 @@
 
     <div style="text-align: center; color: rgba(255,255,255,0.8); font-size: 13px; margin-top: 20px;">
         <p>Last updated: <span id="lastUpdated"></span></p>
-        <p style="margin-top: 8px;">This application is developed by Innovative Music Zentre</p>
+        <p style="margin-top: 8px;">This application is developed by e-Orch Team@Innovative Music Zentre</p>
     </div>
 
     <script>
@@ -383,6 +395,7 @@
             wrapper.className = 'input-wrapper';
             wrapper.innerHTML = `
                 <div class="input-group">
+                    <input type="text" placeholder="Track name (optional)" class="track-name-input" style="max-width: 150px;">
                     <input type="url" placeholder="Paste Dropbox audio link here" class="link-input">
                     <button class="btn btn-remove" onclick="removeInput(this)">Remove</button>
                 </div>
@@ -429,19 +442,23 @@
 
         function generateQR() {
             const inputs = document.querySelectorAll('.link-input');
+            const nameInputs = document.querySelectorAll('.track-name-input');
             const wrappers = document.querySelectorAll('.input-wrapper');
             let validLinks = [];
+            let trackNames = [];
 
             wrappers.forEach(w => w.classList.remove('error'));
 
             inputs.forEach((input, index) => {
                 const url = input.value.trim();
+                const name = nameInputs[index].value.trim();
                 if (url) {
                     if (!isValidDropboxLink(url)) {
                         wrappers[index].classList.add('error');
                         return;
                     }
                     validLinks.push(url);
+                    trackNames.push(name || `Track ${validLinks.length}`);
                 }
             });
 
@@ -452,7 +469,12 @@
 
             generatedLinks = validLinks;
 
-            const fullUrl = `https://mickzone1.github.io/eOrchAudience/player.html?data=${btoa(JSON.stringify(validLinks))}`;
+            const trackData = validLinks.map((link, index) => ({
+                url: link,
+                name: trackNames[index]
+            }));
+
+            const fullUrl = `https://mickzone1.github.io/eOrchAudience/player.html?data=${btoa(JSON.stringify(trackData))}`;
 
             const qrContainer = document.getElementById('qrCanvas');
             const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(fullUrl)}`;
@@ -477,15 +499,16 @@
 
         function displayAudioList(links) {
             const list = document.getElementById('audioList');
+            const nameInputs = document.querySelectorAll('.track-name-input');
             list.innerHTML = '<h3 style="color: #333; font-size: 15px; margin-bottom: 12px;">Audio Files Included:</h3>';
             
             links.forEach((link, index) => {
-                const fileId = extractFileId(link) || `File ${index + 1}`;
+                const trackName = nameInputs[index].value.trim() || `Track ${index + 1}`;
                 const item = document.createElement('div');
                 item.className = 'audio-item';
                 item.innerHTML = `
                     <div class="audio-number">${index + 1}</div>
-                    <div class="audio-name">Audio ${index + 1} (${fileId.substring(0, 15)}...)</div>
+                    <div class="audio-name">${trackName}</div>
                 `;
                 list.appendChild(item);
             });
