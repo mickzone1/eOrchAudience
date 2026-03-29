@@ -372,6 +372,65 @@
             transform: translateY(0);
         }
 
+        .terms-section {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin: 20px 0;
+        }
+
+        .terms-section label {
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .terms-section input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #09A7CC;
+            margin-top: 3px;
+            flex-shrink: 0;
+        }
+
+        .terms-section input[type="checkbox"]:hover {
+            accent-color: #0895b8;
+        }
+
+        .terms-section span {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .terms-section strong {
+            color: #333;
+            font-weight: 600;
+        }
+
+        @media (max-width: 480px) {
+            .terms-section {
+                padding: 14px 16px;
+            }
+            
+            .terms-section label {
+                gap: 8px;
+            }
+            
+            .terms-section input[type="checkbox"] {
+                width: 16px;
+                height: 16px;
+            }
+            
+            .terms-section span {
+                font-size: 12px;
+            }
+        }
+
         .btn-paste {
             background: #f0f0f0;
             color: #333;
@@ -713,6 +772,18 @@
 
         <button id="addBtn" class="btn btn-add" onclick="addInput()">+ Add Another Link</button>
 
+        <div class="terms-section">
+            <label>
+                <input type="checkbox" id="termsCheckbox">
+                <span>
+                    <strong>I agree to the Terms:</strong> We cannot guarantee Dropbox link availability or system uptime. No compensation for service interruptions. QR codes may stop working if links are deleted. Service provided "as is" without warranties.
+                </span>
+            </label>
+            <p id="termsError" style="color: #ff6b6b; font-size: 13px; margin-top: 8px; display: none;">
+                Please agree to the terms before generating QR code
+            </p>
+        </div>
+
         <div class="theme-selector" style="margin-top: 25px;">
             <h3>🎨 Choose Player Theme</h3>
             <div class="theme-swatch-container">
@@ -969,6 +1040,27 @@
         }
 
         function generateQR() {
+            // Check terms agreement
+            const termsCheckbox = document.getElementById('termsCheckbox');
+            const termsError = document.getElementById('termsError');
+            
+            if (!termsCheckbox || !termsCheckbox.checked) {
+                if (termsError) {
+                    termsError.style.display = 'block';
+                }
+                // Scroll to terms section
+                const termsSection = document.querySelector('.terms-section');
+                if (termsSection) {
+                    termsSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return;
+            }
+            
+            // Hide error if visible
+            if (termsError) {
+                termsError.style.display = 'none';
+            }
+
             const inputs = document.querySelectorAll('.link-input');
             const nameInputs = document.querySelectorAll('.track-name-input');
             const wrappers = document.querySelectorAll('.input-wrapper');
@@ -1029,6 +1121,12 @@
                 const sampleLinkSection = document.getElementById('sampleLinkSection');
                 if (sampleLinkSection) {
                     sampleLinkSection.style.display = 'none';
+                }
+                
+                // Hide terms section permanently
+                const termsSection = document.querySelector('.terms-section');
+                if (termsSection) {
+                    termsSection.style.display = 'none';
                 }
                 
                 // Auto-scroll to QR code with cross-browser support
