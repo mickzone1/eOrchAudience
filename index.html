@@ -696,8 +696,9 @@
         <div id="linkInputs" class="link-inputs">
             <div class="input-wrapper">
                 <div class="input-group">
-                    <input type="text" placeholder="Track Name (opt.)" class="track-name-input" style="max-width: 140px;">
+                    <input type="text" placeholder="Track Name (opt.)" class="track-name-input" style="max-width: 150px;">
                     <input type="url" placeholder="Paste Dropbox link" class="link-input">
+                    <button type="button" class="btn-paste" onclick="pasteToInput(this)">📋 Paste</button>
                 </div>
                 <div class="error">Please enter a valid Dropbox link</div>
             </div>
@@ -913,7 +914,7 @@
             wrapper.className = 'input-wrapper';
             wrapper.innerHTML = `
                 <div class="input-group">
-                    <input type="text" placeholder="Track Name (opt.)" class="track-name-input" style="max-width: 140px;">
+                    <input type="text" placeholder="Track Name (opt.)" class="track-name-input" style="max-width: 150px;">
                     <input type="url" placeholder="Paste Dropbox link" class="link-input">
                     <button type="button" class="btn-paste" onclick="pasteToInput(this)">📋 Paste</button>
                     <button class="btn btn-remove" onclick="removeInput(this)">Remove</button>
