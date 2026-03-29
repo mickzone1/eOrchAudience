@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>e-Orch Companion - Audio Player</title>
+    <title>e-Orch Ambience - Audio Player</title>
     <style>
         * {
             box-sizing: border-box;
@@ -36,8 +36,27 @@
 
         h1 {
             color: #333;
-            margin-bottom: 25px;
+            margin-bottom: 10px;
             font-size: 24px;
+        }
+
+        .preload-status {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .preload-status.preloading {
+            color: #e65100;
+            background: #fff3e0;
+        }
+
+        .preload-status.ready {
+            color: #2e7d32;
+            background: #e8f5e9;
         }
 
         .track-list {
@@ -58,6 +77,13 @@
             background: #f8f9fa;
             border-radius: 12px;
             transition: background 0.3s;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .track-item.loaded {
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .track-item:hover {
@@ -76,6 +102,7 @@
             justify-content: center;
             flex-shrink: 0;
             transition: all 0.3s;
+            position: relative;
         }
 
         .track-btn:hover {
@@ -143,6 +170,11 @@
             font-weight: 500;
         }
 
+        .track-status.ready {
+            color: #2e7d32;
+            font-weight: 500;
+        }
+
         .track-spinner {
             display: none;
             width: 20px;
@@ -186,14 +218,6 @@
             transform: translateY(0);
         }
 
-        .instructions {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #e0e0e0;
-            color: #999;
-            font-size: 12px;
-        }
-
         .footer {
             text-align: center;
             color: rgba(255,255,255,0.9);
@@ -235,6 +259,7 @@
 <body>
     <div class="player">
         <h1>e-Orch Ambience</h1>
+        <div id="preloadStatus" class="preload-status preloading">⏳ Preloading audio for instant playback...</div>
         <div id="trackList" class="track-list"></div>
         <button class="stop-all-btn" onclick="stopAll()">⏹ Stop All</button>
     </div>
@@ -249,6 +274,8 @@
         let audioElements = {};
         let trackStates = {};
         let timeouts = {};
+        let preloadProgress = 0;
+        let totalTracks = 0;
 
         function loadTracks() {
             try {
@@ -263,14 +290,18 @@
                 if (tracks.length === 0) {
                     document.getElementById('trackList').innerHTML = 
                         '<p style="color: #c62828;">No audio tracks found</p>';
+                    document.getElementById('preloadStatus').style.display = 'none';
                     return;
                 }
 
+                totalTracks = tracks.length;
                 renderTrackList();
+                preloadAllTracks();
             } catch (e) {
                 console.error(e);
                 document.getElementById('trackList').innerHTML = 
                     '<p style="color: #c62828;">Error loading tracks</p>';
+                document.getElementById('preloadStatus').style.display = 'none';
             }
         }
 
@@ -282,17 +313,18 @@
                 const trackName = track.name || `Track ${index + 1}`;
                 const item = document.createElement('div');
                 item.className = 'track-item';
+                item.id = `track-item-${index}`;
                 item.innerHTML = `
                     <button class="track-btn" id="btn-${index}" onclick="playTrack(${index})">
                         <div class="play-icon"></div>
                     </button>
                     <div class="track-label">${trackName}</div>
                     <div class="track-spinner" id="spinner-${index}"></div>
-                    <div class="track-status" id="status-${index}">Ready</div>
+                    <div class="track-status" id="status-${index}">Loading...</div>
                 `;
                 container.appendChild(item);
                 
-                trackStates[index] = 'idle';
+                trackStates[index] = 'loading';
                 audioElements[index] = null;
                 timeouts[index] = null;
             });
@@ -303,18 +335,93 @@
             return url.replace('www.dropbox.com', 'dl.dropboxusercontent.com');
         }
 
+        function preloadAllTracks() {
+            const preloadStatus = document.getElementById('preloadStatus');
+            
+            tracks.forEach((track, index) => {
+                const audioUrl = convertDropboxLink(track.url);
+                const audio = new Audio(audioUrl);
+                audio.preload = 'auto';
+                
+                audioElements[index] = audio;
+                
+                const item = document.getElementById(`track-item-${index}`);
+                const status = document.getElementById(`status-${index}`);
+                
+                audio.oncanplaythrough = () => {
+                    preloadProgress++;
+                    item.classList.add('loaded');
+                    status.textContent = 'Ready';
+                    status.className = 'track-status ready';
+                    trackStates[index] = 'ready';
+                    
+                    updatePreloadStatus();
+                };
+                
+                audio.onerror = () => {
+                    preloadProgress++;
+                    item.classList.add('loaded');
+                    status.textContent = 'Error';
+                    status.className = 'track-status error';
+                    trackStates[index] = 'error';
+                    
+                    updatePreloadStatus();
+                };
+                
+                audio.load();
+            });
+            
+            setTimeout(() => {
+                tracks.forEach((_, index) => {
+                    if (trackStates[index] === 'loading') {
+                        const item = document.getElementById(`track-item-${index}`);
+                        const status = document.getElementById(`status-${index}`);
+                        item.classList.add('loaded');
+                        status.textContent = 'Ready';
+                        status.className = 'track-status ready';
+                        trackStates[index] = 'ready';
+                    }
+                });
+                updatePreloadStatus(true);
+            }, 10000);
+        }
+
+        function updatePreloadStatus(forceReady = false) {
+            const preloadStatus = document.getElementById('preloadStatus');
+            
+            if (forceReady || preloadProgress >= totalTracks) {
+                preloadStatus.textContent = '✓ All tracks ready for instant playback!';
+                preloadStatus.className = 'preload-status ready';
+                setTimeout(() => {
+                    preloadStatus.style.display = 'none';
+                }, 3000);
+            } else {
+                const percent = Math.round((preloadProgress / totalTracks) * 100);
+                preloadStatus.textContent = `⏳ Preloading... ${percent}% (${preloadProgress}/${totalTracks} tracks)`;
+            }
+        }
+
         function playTrack(index) {
             if (trackStates[index] === 'playing') {
                 return;
             }
 
-            if (trackStates[index] === 'complete') {
+            if (trackStates[index] === 'error') {
                 resetTrack(index);
             }
 
             const btn = document.getElementById(`btn-${index}`);
             const spinner = document.getElementById(`spinner-${index}`);
             const status = document.getElementById(`status-${index}`);
+            const item = document.getElementById(`track-item-${index}`);
+
+            if (trackStates[index] === 'complete') {
+                resetTrack(index);
+                setTimeout(() => {
+                    playTrack(index);
+                }, 100);
+                return;
+            }
 
             btn.classList.add('disabled');
             spinner.classList.add('show');
@@ -322,28 +429,37 @@
             status.className = 'track-status';
             trackStates[index] = 'loading';
 
-            const audioUrl = convertDropboxLink(tracks[index].url);
+            const audio = audioElements[index];
             
-            console.log(`Playing Track ${index + 1}:`, audioUrl);
+            if (!audio) {
+                const audioUrl = convertDropboxLink(tracks[index].url);
+                const newAudio = new Audio(audioUrl);
+                newAudio.preload = 'auto';
+                audioElements[index] = newAudio;
+                playAudio(newAudio, index, btn, spinner, status, item);
+            } else {
+                playAudio(audio, index, btn, spinner, status, item);
+            }
+        }
 
-            const audio = new Audio(audioUrl);
-            audio.preload = 'auto';
-            audioElements[index] = audio;
+        function playAudio(audio, index, btn, spinner, status, item) {
+            console.log(`Playing Track ${index + 1}`);
 
-            timeouts[index] = setTimeout(() => {
+            const timeout = setTimeout(() => {
                 spinner.classList.remove('show');
                 status.textContent = 'Timeout';
                 status.className = 'track-status error';
                 btn.classList.remove('disabled');
-                trackStates[index] = 'idle';
+                trackStates[index] = 'error';
                 audio.pause();
-            }, 5000);
+            }, 10000);
 
-            audio.oncanplay = () => {
-                clearTimeout(timeouts[index]);
+            audio.oncanplaythrough = () => {
+                clearTimeout(timeout);
                 spinner.classList.remove('show');
             };
 
+            audio.currentTime = 0;
             audio.play().then(() => {
                 trackStates[index] = 'playing';
                 btn.classList.remove('disabled');
@@ -360,7 +476,7 @@
                 };
 
                 audio.onerror = () => {
-                    trackStates[index] = 'idle';
+                    trackStates[index] = 'error';
                     btn.classList.remove('disabled');
                     status.textContent = 'Error';
                     status.className = 'track-status error';
@@ -368,9 +484,9 @@
 
             }).catch(err => {
                 console.error('Play error:', err);
-                clearTimeout(timeouts[index]);
+                clearTimeout(timeout);
                 spinner.classList.remove('show');
-                trackStates[index] = 'idle';
+                trackStates[index] = 'error';
                 btn.classList.remove('disabled');
                 status.textContent = 'Error';
                 status.className = 'track-status error';
@@ -385,8 +501,8 @@
             btn.classList.remove('disabled', 'playing');
             spinner.classList.remove('show');
             status.textContent = 'Ready';
-            status.className = 'track-status';
-            trackStates[index] = 'idle';
+            status.className = 'track-status ready';
+            trackStates[index] = 'ready';
             
             if (timeouts[index]) {
                 clearTimeout(timeouts[index]);
@@ -395,7 +511,7 @@
             
             if (audioElements[index]) {
                 audioElements[index].pause();
-                audioElements[index] = null;
+                audioElements[index].currentTime = 0;
             }
         }
 
