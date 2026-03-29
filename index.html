@@ -169,7 +169,6 @@
         .btn-download {
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
             color: white;
-            margin-top: 15px;
         }
 
         .btn-download:hover {
@@ -180,7 +179,6 @@
         .btn-back {
             background: #f0f0f0;
             color: #333;
-            margin-top: 15px;
         }
 
         .btn-back:hover {
@@ -487,6 +485,15 @@
             .btn-paste {
                 width: 100%;
             }
+
+            .qr-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .qr-buttons .btn {
+                width: 100%;
+            }
         }
 
         /* Password Modal Styles */
@@ -746,9 +753,10 @@
             
             <div id="audioList" class="audio-list"></div>
             
-            <button class="btn btn-download" onclick="downloadQR()">📥 Save QR Code</button>
-            <br>
-            <button class="btn btn-back" onclick="backToEditor()">← Create New QR Code</button>
+            <div class="qr-buttons" style="display: flex; gap: 12px; justify-content: center; margin-top: 15px; flex-wrap: wrap;">
+                <button class="btn btn-back" onclick="backToEditor()">← Create New QR Code</button>
+                <button class="btn btn-download" onclick="downloadQR()">📥 Download QR Code</button>
+            </div>
         </div>
     </div>
 
@@ -1010,6 +1018,12 @@
                 document.getElementById('addBtn').style.display = 'none';
                 document.getElementById('submitBtn').style.display = 'none';
                 document.getElementById('qrSection').classList.add('show');
+                
+                // Hide theme selector permanently
+                const themeSelector = document.querySelector('.theme-selector');
+                if (themeSelector) {
+                    themeSelector.style.display = 'none';
+                }
                 
                 // Auto-scroll to QR code with cross-browser support
                 setTimeout(() => {
