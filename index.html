@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audio QR Code Generator</title>
-
     <style>
         * {
             box-sizing: border-box;
@@ -151,6 +150,7 @@
 
         #qrCanvas img {
             display: block;
+            max-width: 100%;
         }
 
         .btn-download {
@@ -446,14 +446,15 @@
             const fullUrl = `https://mickzone1.github.io/eOrchAudience/player.html#data=${btoa(JSON.stringify(validLinks))}`;
 
             const qrContainer = document.getElementById('qrCanvas');
-            qrContainer.innerHTML = '<img id="qrImage" alt="QR Code" style="max-width: 100%; height: auto;" />';
+            const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(fullUrl)}`;
+            
+            qrContainer.innerHTML = `<img id="qrImage" src="${qrImageUrl}" alt="QR Code" style="max-width: 100%; height: auto;" />`;
             
             const qrImage = document.getElementById('qrImage');
-            qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(fullUrl)}`;
             
             qrImage.onload = function() {
                 displayAudioList(validLinks);
-                document.getElementById('linkInputs').parentElement.style.display = 'none';
+                document.getElementById('linkInputs').style.display = 'none';
                 document.getElementById('addBtn').style.display = 'none';
                 document.getElementById('submitBtn').style.display = 'none';
                 document.getElementById('qrSection').classList.add('show');
@@ -461,6 +462,7 @@
             
             qrImage.onerror = function() {
                 alert('Error generating QR code. Please check your internet connection and try again.');
+                qrContainer.innerHTML = '<p style="color: #ff6b6b;">Failed to load QR code. Please try again.</p>';
             };
         }
 
@@ -484,30 +486,18 @@
             const qrImage = document.getElementById('qrImage');
             
             if (qrImage && qrImage.src) {
-                fetch(qrImage.src)
-                    .then(response => response.blob())
-                    .then(blob => {
-                        const url = URL.createObjectURL(blob);
-                        const link = document.createElement('a');
-                        link.download = 'audio-qr-code.png';
-                        link.href = url;
-                        link.click();
-                        URL.revokeObjectURL(url);
-                    })
-                    .catch(() => {
-                        const link = document.createElement('a');
-                        link.download = 'audio-qr-code.png';
-                        link.href = qrImage.src;
-                        link.target = '_blank';
-                        link.click();
-                    });
+                const link = document.createElement('a');
+                link.download = 'audio-qr-code.png';
+                link.href = qrImage.src;
+                link.target = '_blank';
+                link.click();
             } else {
                 alert('QR code not found. Please try generating it again.');
             }
         }
 
         function backToEditor() {
-            document.getElementById('linkInputs').parentElement.style.display = 'flex';
+            document.getElementById('linkInputs').style.display = 'flex';
             document.getElementById('addBtn').style.display = 'block';
             document.getElementById('submitBtn').style.display = 'block';
             document.getElementById('qrSection').classList.remove('show');
@@ -531,110 +521,6 @@
         }
 
         updateLastModified();
-
-        function generatePlayerPage(links) {
-            const playerHTML = `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Player</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .player {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            text-align: center;
-            max-width: 400px;
-            width: 100%;
-        }
-        h1 { color: #333; margin-bottom: 30px; font-size: 24px; }
-        .play-btn {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            transition: transform 0.3s;
-        }
-        .play-btn:hover { transform: scale(1.05); }
-        .play-btn:active { transform: scale(0.95); }
-        .play-icon {
-            width: 0;
-            height: 0;
-            border-left: 30px solid white;
-            border-top: 20px solid transparent;
-            border-bottom: 20px solid transparent;
-            margin-left: 8px;
-        }
-        .track-info { color: #666; font-size: 14px; margin-top: 20px; }
-        .track-number { color: #333; font-weight: 600; font-size: 16px; margin-bottom: 5px; }
-    </style>
-</head>
-<body>
-    <div class="player">
-        <h1>🎵 Audio Player</h1>
-        <button class="play-btn" onclick="playNext()">
-            <div class="play-icon"></div>
-        </button>
-        <div class="track-info">
-            <div class="track-number" id="trackNumber">Track 1</div>
-            <div id="trackStatus">Tap play to listen</div>
-        </div>
-    </div>
-    <script>
-        let currentTrack = 0;
-        const tracks = window.location.hash.substring(1).split(',').map(t => t.trim());
-        
-        function playNext() {
-            if (currentTrack >= tracks.length) {
-                currentTrack = 0;
-            }
-            const trackId = tracks[currentTrack].match(/\\/d\\/([a-zA-Z0-9-_]+)/)?.[1] || 
-                           tracks[currentTrack].match(/id=([a-zA-Z0-9-_]+)/)?.[1] || '';
-            const audioUrl = 'https://drive.google.com/uc?export=download&id=' + trackId;
-            
-            document.getElementById('trackNumber').textContent = 'Track ' + (currentTrack + 1);
-            document.getElementById('trackStatus').textContent = 'Loading...';
-            
-            const audio = new Audio(audioUrl);
-            audio.play().then(() => {
-                document.getElementById('trackStatus').textContent = 'Playing...';
-            }).catch(err => {
-                document.getElementById('trackStatus').textContent = 'Click to open in Drive';
-                window.open('https://drive.google.com/file/d/' + trackId + '/view', '_blank');
-            });
-            
-            audio.onended = () => {
-                currentTrack++;
-                if (currentTrack < tracks.length) {
-                    document.getElementById('trackStatus').textContent = 'Tap for next track';
-                } else {
-                    document.getElementById('trackStatus').textContent = 'All tracks complete!';
-                }
-            };
-        }
-    <\/script>
-</body>
-</html>`;
-            return playerHTML;
-        }
     </script>
 </body>
 </html>
