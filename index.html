@@ -1010,6 +1010,22 @@
                 document.getElementById('addBtn').style.display = 'none';
                 document.getElementById('submitBtn').style.display = 'none';
                 document.getElementById('qrSection').classList.add('show');
+                
+                // Auto-scroll to QR code with cross-browser support
+                setTimeout(() => {
+                    const qrSection = document.getElementById('qrSection');
+                    
+                    if (qrSection && qrSection.scrollIntoView) {
+                        try {
+                            qrSection.scrollIntoView({ 
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        } catch (e) {
+                            qrSection.scrollIntoView();
+                        }
+                    }
+                }, 150);
             };
             
             qrImage.onerror = function() {
