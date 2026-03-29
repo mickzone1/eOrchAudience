@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio QR Code Generator</title>
+    <title>e-Orch Companion</title>
     <style>
         * {
             box-sizing: border-box;
@@ -214,15 +214,15 @@
         }
 
         .permission-alert {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 25px;
         }
 
         .permission-alert h3 {
-            color: #856404;
+            color: #1565c0;
             font-size: 16px;
             margin-bottom: 12px;
             display: flex;
@@ -231,14 +231,14 @@
         }
 
         .permission-alert ol {
-            color: #856404;
+            color: #1565c0;
             padding-left: 20px;
             font-size: 14px;
             line-height: 1.8;
         }
 
         .permission-alert strong {
-            color: #664d03;
+            color: #0d47a1;
         }
 
         .audio-list {
@@ -310,26 +310,26 @@
 <body>
     <div class="container">
         <h1>🎵 e-Orch Companion</h1>
-        <p class="subtitle">Create QR codes for your Google Drive audio files</p>
+        <p class="subtitle">Create QR codes for your Dropbox audio files</p>
 
         <div class="permission-alert">
-            <h3>⚠️ Important: Set File Permissions First</h3>
+            <h3>📁 How to Get Dropbox Links</h3>
             <ol>
-                <li>In Google Drive, right-click your audio file</li>
-                <li>Click <strong>Share</strong></li>
-                <li>Under "General access", select <strong>"Anyone with the link"</strong></li>
-                <li>Set role to <strong>Viewer</strong></li>
-                <li>Click <strong>Done</strong></li>
+                <li>Upload your audio file to Dropbox</li>
+                <li>Click <strong>Share</strong> on the file</li>
+                <li>Click <strong>"Create link"</strong></li>
+                <li>Click <strong>"Copy link"</strong></li>
+                <li>Paste the link below</li>
             </ol>
-            <p style="color: #856404; font-size: 13px; margin-top: 12px; margin-bottom: 0;">
-                Without this step, students won't be able to play the audio!
+            <p style="color: #1565c0; font-size: 13px; margin-top: 12px; margin-bottom: 0;">
+                Dropbox links work best! Make sure the link sharing is enabled.
             </p>
         </div>
 
         <div class="instructions">
             <h3>How to use:</h3>
             <ol>
-                <li>Paste up to 5 Google Drive audio links below</li>
+                <li>Paste up to 5 Dropbox audio links below</li>
                 <li>Click "Generate QR Code"</li>
                 <li>Save or print the QR code</li>
                 <li>Share with students - they scan to listen!</li>
@@ -339,9 +339,9 @@
         <div id="linkInputs" class="link-inputs">
             <div class="input-wrapper">
                 <div class="input-group">
-                    <input type="url" placeholder="Paste Google Drive audio link here" class="link-input">
+                    <input type="url" placeholder="Paste Dropbox audio link here" class="link-input">
                 </div>
-                <div class="error">Please enter a valid Google Drive link</div>
+                <div class="error">Please enter a valid Dropbox link</div>
             </div>
         </div>
 
@@ -383,10 +383,10 @@
             wrapper.className = 'input-wrapper';
             wrapper.innerHTML = `
                 <div class="input-group">
-                    <input type="url" placeholder="Paste Google Drive audio link here" class="link-input">
+                    <input type="url" placeholder="Paste Dropbox audio link here" class="link-input">
                     <button class="btn btn-remove" onclick="removeInput(this)">Remove</button>
                 </div>
-                <div class="error">Please enter a valid Google Drive link</div>
+                <div class="error">Please enter a valid Dropbox link</div>
             `;
             container.appendChild(wrapper);
             linkCount++;
@@ -401,15 +401,23 @@
             document.getElementById('addBtn').disabled = linkCount >= maxLinks;
         }
 
-        function isValidGoogleDriveLink(url) {
-            return url && (url.includes('drive.google.com') || url.includes('docs.google.com'));
+        function isValidDropboxLink(url) {
+            return url && (url.includes('dropbox.com') || url.includes('db.tt'));
+        }
+
+        function convertDropboxLink(url) {
+            const fileId = extractFileId(url);
+            if (fileId) {
+                return `https://dl.dropboxusercontent.com/s/${fileId}/audio.mp3?dl=0`;
+            }
+            return url;
         }
 
         function extractFileId(url) {
             const patterns = [
-                /\/d\/([a-zA-Z0-9-_]+)/,
-                /id=([a-zA-Z0-9-_]+)/,
-                /\/file\/d\/([a-zA-Z0-9-_]+)/
+                /\/s\/([a-zA-Z0-9-_]+)\//,
+                /\/s\/([a-zA-Z0-9-_]+)\?/,
+                /dropbox.com\/s\/([a-zA-Z0-9-_]+)/
             ];
 
             for (const pattern of patterns) {
@@ -429,7 +437,7 @@
             inputs.forEach((input, index) => {
                 const url = input.value.trim();
                 if (url) {
-                    if (!isValidGoogleDriveLink(url)) {
+                    if (!isValidDropboxLink(url)) {
                         wrappers[index].classList.add('error');
                         return;
                     }
@@ -438,7 +446,7 @@
             });
 
             if (validLinks.length === 0) {
-                alert('Please enter at least one Google Drive link');
+                alert('Please enter at least one Dropbox link');
                 return;
             }
 

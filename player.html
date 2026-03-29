@@ -137,7 +137,6 @@
             margin-top: 15px;
             cursor: pointer;
             text-decoration: none;
-            inline-block: true;
         }
 
         .fallback-btn.show {
@@ -157,6 +156,10 @@
             color: rgba(255,255,255,0.9);
             font-size: 13px;
             margin-top: 10px;
+        }
+
+        .footer p {
+            margin: 4px 0;
         }
 
         @media (max-width: 480px) {
@@ -187,14 +190,15 @@
             <div class="track-number" id="trackNumber">Track 1</div>
             <div id="trackStatus">Tap the play button to listen</div>
         </div>
-        <a id="fallbackLink" class="fallback-btn" target="_blank" rel="noopener">Open in Google Drive</a>
+        <a id="fallbackLink" class="fallback-btn" target="_blank" rel="noopener">Open in Dropbox</a>
         <div class="instructions">
             Tap play to start • Each tap plays the next track
         </div>
     </div>
 
     <div class="footer">
-        This application is developed by Innovative Music Zentre
+        <p>This application is developed by Innovative Music Zentre</p>
+        <p>Last updated: <span id="lastUpdated"></span></p>
     </div>
 
     <script>
@@ -224,11 +228,19 @@
             }
         }
 
+        function convertDropboxLink(url) {
+            const fileId = extractFileId(url);
+            if (fileId) {
+                return `https://dl.dropboxusercontent.com/s/${fileId}/audio.mp3?dl=0`;
+            }
+            return url;
+        }
+
         function extractFileId(url) {
             const patterns = [
-                /\/d\/([a-zA-Z0-9-_]+)/,
-                /id=([a-zA-Z0-9-_]+)/,
-                /\/file\/d\/([a-zA-Z0-9-_]+)/
+                /\/s\/([a-zA-Z0-9-_]+)\//,
+                /\/s\/([a-zA-Z0-9-_]+)\?/,
+                /dropbox.com\/s\/([a-zA-Z0-9-_]+)/
             ];
 
             for (const pattern of patterns) {
@@ -266,15 +278,7 @@
 
             btn.classList.add('disabled');
 
-            const trackId = extractFileId(tracks[currentTrack]);
-            
-            if (!trackId) {
-                showError('Invalid track link');
-                btn.classList.remove('disabled');
-                return;
-            }
-
-            const audioUrl = 'https://drive.google.com/uc?export=download&confirm=t&id=' + trackId;
+            const audioUrl = convertDropboxLink(tracks[currentTrack]);
             
             setStatus('Loading...', 'playing');
 
@@ -298,22 +302,22 @@
                 };
 
                 audioElement.onerror = () => {
-                    showError('Cannot play this track. Make sure the file is shared as "Anyone with the link"');
+                    showError('Cannot play this track. Please check the Dropbox link and try again.');
                     btn.classList.remove('disabled');
-                    showFallback(trackId);
+                    showFallback(tracks[currentTrack]);
                 };
 
             }).catch(err => {
                 console.error(err);
-                showError('Cannot play this track. Make sure the file is shared as "Anyone with the link"');
+                showError('Cannot play this track. Please check the Dropbox link and try again.');
                 btn.classList.remove('disabled');
-                showFallback(trackId);
+                showFallback(tracks[currentTrack]);
             });
         }
 
-        function showFallback(trackId) {
+        function showFallback(url) {
             const fallbackLink = document.getElementById('fallbackLink');
-            fallbackLink.href = 'https://drive.google.com/file/d/' + trackId + '/view';
+            fallbackLink.href = url;
             fallbackLink.classList.add('show');
         }
 
@@ -331,6 +335,20 @@
         function showError(message) {
             setStatus(message, 'error');
         }
+
+        function updateLastModified() {
+            const lastModified = new Date(document.lastModified);
+            const options = { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            };
+            document.getElementById('lastUpdated').textContent = lastModified.toLocaleDateString('en-US', options);
+        }
+
+        updateLastModified();
 
         window.addEventListener('DOMContentLoaded', loadTracks);
     </script>
