@@ -259,12 +259,23 @@
             margin-left: 5px;
         }
 
-        /* Mockup Track Name */
-        .mockup-track {
-            font-size: 13px;
-            color: #333;
-            font-weight: 600;
+        /* Mockup Track List */
+        .mockup-track-list {
+            text-align: left;
             margin-bottom: 12px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .mockup-track-item {
+            font-size: 12px;
+            color: #333;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .mockup-track-item:last-child {
+            border-bottom: none;
         }
 
         /* Mockup Progress Bar */
@@ -301,13 +312,7 @@
         /* Clickable mockup indicator */
         .phone-mockup-container {
             cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
             position: relative;
-        }
-
-        .phone-mockup-container:hover {
-            transform: scale(1.02);
-            box-shadow: 0 25px 70px rgba(0,0,0,0.4);
         }
 
         .phone-mockup-container::after {
@@ -318,13 +323,7 @@
             transform: translateX(-50%);
             font-size: 12px;
             color: #666;
-            opacity: 0;
-            transition: opacity 0.3s;
             white-space: nowrap;
-        }
-
-        .phone-mockup-container:hover::after {
-            opacity: 1;
         }
 
         /* Mobile Responsive */
@@ -1026,7 +1025,7 @@
                             <div class="mockup-header">e-Orch Ambience</div>
                             <div class="mockup-player">
                                 <div class="mockup-play-btn" id="mockupPlayBtn"></div>
-                                <div class="mockup-track">Track 1</div>
+                                <div id="mockupTrackList" style="text-align: left; margin-bottom: 12px;"></div>
                                 <div class="mockup-progress">
                                     <div class="mockup-progress-bar" id="mockupProgressBar"></div>
                                 </div>
@@ -1377,6 +1376,21 @@
                     phoneMockup.style.display = 'block';
                 }
                 
+                // Update mockup with actual track list
+                const mockupTrackList = document.getElementById('mockupTrackList');
+                if (mockupTrackList) {
+                    mockupTrackList.innerHTML = '';
+                    const mockupTrackContainer = document.createElement('div');
+                    mockupTrackContainer.className = 'mockup-track-list';
+                    validLinks.forEach((link, index) => {
+                        const trackItem = document.createElement('div');
+                        trackItem.className = 'mockup-track-item';
+                        trackItem.textContent = `${index + 1}. ${nameInputs[index].value.trim() || 'Track ' + (index + 1)}`;
+                        mockupTrackContainer.appendChild(trackItem);
+                    });
+                    mockupTrackList.appendChild(mockupTrackContainer);
+                }
+                
                 // Hide theme selector permanently
                 const themeSelector = document.querySelector('.theme-selector');
                 if (themeSelector) {
@@ -1469,13 +1483,49 @@
         }
 
         function backToEditor() {
+            // Show all sections
             document.getElementById('linkInputs').style.display = 'flex';
             document.getElementById('addBtn').style.display = 'block';
             document.getElementById('submitBtn').style.display = 'block';
             document.getElementById('qrSection').classList.remove('show');
             
+            // Show theme selector
+            const themeSelector = document.querySelector('.theme-selector');
+            if (themeSelector) {
+                themeSelector.style.display = 'block';
+            }
+            
+            // Show sample link section
+            const sampleLinkSection = document.getElementById('sampleLinkSection');
+            if (sampleLinkSection) {
+                sampleLinkSection.style.display = 'block';
+            }
+            
+            // Show terms section
+            const termsSection = document.querySelector('.terms-section');
+            if (termsSection) {
+                termsSection.style.display = 'block';
+            }
+            
+            // Show CAPTCHA section
+            const captchaContainer = document.querySelector('.captcha-container');
+            if (captchaContainer) {
+                captchaContainer.style.display = 'block';
+            }
+            
+            // Reset CAPTCHA error
+            const captchaError = document.getElementById('captchaError');
+            if (captchaError) {
+                captchaError.style.display = 'none';
+            }
+            
+            // Clear input fields
             const inputs = document.querySelectorAll('.link-input');
             inputs.forEach(input => input.value = '');
+            
+            // Clear track name inputs
+            const nameInputs = document.querySelectorAll('.track-name-input');
+            nameInputs.forEach(input => input.value = '');
             
             generatedLinks = [];
             
@@ -1485,10 +1535,22 @@
                 phoneMockup.style.display = 'none';
             }
             
+            // Reset mockup track list
+            const mockupTrackList = document.getElementById('mockupTrackList');
+            if (mockupTrackList) {
+                mockupTrackList.innerHTML = '';
+            }
+            
             // Reset CAPTCHA
             captchaVerified = false;
             if (window.turnstile) {
                 turnstile.reset();
+            }
+            
+            // Reset terms checkbox
+            const termsCheckbox = document.getElementById('termsCheckbox');
+            if (termsCheckbox) {
+                termsCheckbox.checked = false;
             }
         }
 
