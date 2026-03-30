@@ -298,6 +298,35 @@
             font-weight: 500;
         }
 
+        /* Clickable mockup indicator */
+        .phone-mockup-container {
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+
+        .phone-mockup-container:hover {
+            transform: scale(1.02);
+            box-shadow: 0 25px 70px rgba(0,0,0,0.4);
+        }
+
+        .phone-mockup-container::after {
+            content: '🔗 Click to preview player';
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #666;
+            opacity: 0;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+        }
+
+        .phone-mockup-container:hover::after {
+            opacity: 1;
+        }
+
         /* Mobile Responsive */
         @media (max-width: 768px) {
             .preview-container {
@@ -990,8 +1019,8 @@
                 </div>
                 
                 <!-- Phone Mockup Preview -->
-                <div class="phone-mockup-container" style="display: none;">
-                    <div class="mockup-label">Player Preview</div>
+                <div class="phone-mockup-container" style="display: none;" onclick="openPlayerPreview()">
+                    <div class="mockup-label">Player Preview (Click to Open)</div>
                     <div class="phone-mockup">
                         <div class="phone-screen">
                             <div class="mockup-header">e-Orch Ambience</div>
@@ -1324,6 +1353,9 @@
 
             const theme = document.getElementById('selectedTheme').value;
             const fullUrl = `https://mickzone1.github.io/eOrchAudience/player.html?data=${btoa(JSON.stringify(trackData))}&theme=${theme}`;
+            
+            // Store URL for preview
+            window.generatedPlayerUrl = fullUrl;
 
             const qrContainer = document.getElementById('qrCanvas');
             const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(fullUrl)}`;
@@ -1425,6 +1457,14 @@
                 link.click();
             } else {
                 alert('QR code not found. Please try generating it again.');
+            }
+        }
+
+        function openPlayerPreview() {
+            if (window.generatedPlayerUrl) {
+                window.open(window.generatedPlayerUrl, '_blank');
+            } else {
+                alert('Please generate a QR code first');
             }
         }
 
