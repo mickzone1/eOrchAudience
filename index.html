@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>e-Orch Ambience</title>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style>
         :root {
             --theme-gradient: linear-gradient(135deg, #09A7CC 0%, #09A7CC 100%);
@@ -401,33 +402,21 @@
             accent-color: #0895b8;
         }
 
-        .terms-section span {
-            font-size: 13px;
-            color: #666;
-            line-height: 1.5;
+        .captcha-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
         }
 
-        .terms-section strong {
-            color: #333;
-            font-weight: 600;
+        .captcha-container iframe {
+            border-radius: 8px;
         }
 
         @media (max-width: 480px) {
-            .terms-section {
-                padding: 14px 16px;
-            }
-            
-            .terms-section label {
-                gap: 8px;
-            }
-            
-            .terms-section input[type="checkbox"] {
-                width: 16px;
-                height: 16px;
-            }
-            
-            .terms-section span {
-                font-size: 12px;
+            .captcha-container {
+                transform: scale(0.95);
+                transform-origin: center;
             }
         }
 
@@ -812,6 +801,19 @@
             </p>
         </div>
         
+        <!-- Cloudflare Turnstile CAPTCHA -->
+        <div class="captcha-container" style="margin: 20px 0; display: flex; justify-content: center;">
+            <div class="cf-turnstile" 
+                 data-sitekey="0x4AAAAAACxx2jt9vyotDhFu" 
+                 data-mode="managed"
+                 data-callback="captchaSuccess"
+                 data-expired-callback="captchaExpired">
+            </div>
+        </div>
+        <p id="captchaError" style="color: #ff6b6b; font-size: 13px; text-align: center; margin: 8px 0; display: none;">
+            Please complete the security check
+        </p>
+        
         <div style="margin-top: 20px;">
             <button id="submitBtn" class="btn btn-submit" onclick="generateQR()">Generate QR Code</button>
         </div>
@@ -874,6 +876,19 @@
 
         // Run on page load
         checkAuth();
+
+        // ===== CLOUDFLARE TURNSTILE CAPTCHA =====
+        let captchaVerified = false;
+
+        function captchaSuccess(token) {
+            captchaVerified = true;
+            const captchaError = document.getElementById('captchaError');
+            if (captchaError) captchaError.style.display = 'none';
+        }
+
+        function captchaExpired() {
+            captchaVerified = false;
+        }
 
         // ===== SAMPLE DROPBOX LINK =====
         const SAMPLE_DROPBOX_LINK = 'https://www.dropbox.com/scl/fi/52780o6pulu5ghrxa09kt/1_Inside-the-Walled-City-Park.wav?rlkey=hmqvpl73iamc1j5pe0sy8dn90&st=nv2n0whi&dl=0';
@@ -1040,6 +1055,21 @@
         }
 
         function generateQR() {
+            // Check CAPTCHA verification
+            if (!captchaVerified) {
+                const captchaError = document.getElementById('captchaError');
+                if (captchaError) {
+                    captchaError.style.display = 'block';
+                    captchaError.textContent = 'Please complete the security check';
+                }
+                // Scroll to CAPTCHA
+                const captchaContainer = document.querySelector('.captcha-container');
+                if (captchaContainer) {
+                    captchaContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return;
+            }
+            
             // Check terms agreement
             const termsCheckbox = document.getElementById('termsCheckbox');
             const termsError = document.getElementById('termsError');
@@ -1129,6 +1159,17 @@
                     termsSection.style.display = 'none';
                 }
                 
+                // Hide CAPTCHA section permanently
+                const captchaContainer = document.querySelector('.captcha-container');
+                if (captchaContainer) {
+                    captchaContainer.style.display = 'none';
+                }
+                
+                const captchaError = document.getElementById('captchaError');
+                if (captchaError) {
+                    captchaError.style.display = 'none';
+                }
+                
                 // Auto-scroll to QR code with cross-browser support
                 setTimeout(() => {
                     const qrSection = document.getElementById('qrSection');
@@ -1193,6 +1234,12 @@
             inputs.forEach(input => input.value = '');
             
             generatedLinks = [];
+            
+            // Reset CAPTCHA
+            captchaVerified = false;
+            if (window.turnstile) {
+                turnstile.reset();
+            }
         }
 
         function updateVersion() {
