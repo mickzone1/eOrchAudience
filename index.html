@@ -167,6 +167,165 @@
             max-width: 100%;
         }
 
+        /* Preview Container */
+        .preview-container {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+
+        /* Phone Mockup - iPhone Style */
+        .phone-mockup {
+            width: 240px;
+            height: 480px;
+            border: 12px solid #1a1a1a;
+            border-radius: 36px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            background: white;
+        }
+
+        /* Phone Notch */
+        .phone-mockup::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 22px;
+            background: #1a1a1a;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            z-index: 10;
+        }
+
+        /* Phone Screen */
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            padding: 35px 16px 16px 16px;
+            box-sizing: border-box;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Mockup Header */
+        .mockup-header {
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 25px;
+            padding-top: 8px;
+        }
+
+        /* Mockup Player */
+        .mockup-player {
+            background: var(--theme-gradient);
+            border-radius: 16px;
+            padding: 24px 16px;
+            text-align: center;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* Mockup Play Button */
+        .mockup-play-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: white;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .mockup-play-btn::after {
+            content: '';
+            width: 0;
+            height: 0;
+            border-left: 20px solid var(--theme-primary);
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            margin-left: 5px;
+        }
+
+        /* Mockup Track Name */
+        .mockup-track {
+            font-size: 13px;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        /* Mockup Progress Bar */
+        .mockup-progress {
+            width: 100%;
+            height: 3px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .mockup-progress-bar {
+            width: 60%;
+            height: 100%;
+            background: var(--theme-gradient);
+            border-radius: 2px;
+            animation: progressPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes progressPulse {
+            0%, 100% { opacity: 1; transform: scaleX(1); }
+            50% { opacity: 0.7; transform: scaleX(0.98); }
+        }
+
+        /* Mockup Label */
+        .mockup-label {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .preview-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .phone-mockup {
+                width: 200px;
+                height: 400px;
+            }
+            
+            .mockup-header {
+                font-size: 14px;
+            }
+            
+            .mockup-play-btn {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .mockup-play-btn::after {
+                border-left-width: 17px;
+                border-top-width: 10px;
+                border-bottom-width: 10px;
+            }
+        }
+
         .btn-download {
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
             color: white;
@@ -819,12 +978,34 @@
         </div>
 
         <div id="qrSection" class="qr-section">
-            <h2 style="color: #333; font-size: 20px; margin-bottom: 10px;">Your QR Code is Ready!</h2>
-            <p style="color: #666; font-size: 14px; margin-bottom: 15px;">Invite your audience to scan the QR code and perform together!</p>
+            <h2 style="color: #333; font-size: 20px; margin-bottom: 10px; text-align: center;">Your QR Code is Ready!</h2>
+            <p style="color: #666; font-size: 14px; margin-bottom: 15px; text-align: center;">Invite your audience to scan the QR code and perform together!</p>
             
-            <div id="qrCanvas"></div>
-            
-            <div id="audioList" class="audio-list"></div>
+            <!-- Preview Container with QR Code and Phone Mockup -->
+            <div class="preview-container">
+                <!-- QR Code Section -->
+                <div class="qr-section-content" style="text-align: center;">
+                    <div id="qrCanvas"></div>
+                    <div id="audioList" class="audio-list"></div>
+                </div>
+                
+                <!-- Phone Mockup Preview -->
+                <div class="phone-mockup-container" style="display: none;">
+                    <div class="mockup-label">Player Preview</div>
+                    <div class="phone-mockup">
+                        <div class="phone-screen">
+                            <div class="mockup-header">e-Orch Ambience</div>
+                            <div class="mockup-player">
+                                <div class="mockup-play-btn" id="mockupPlayBtn"></div>
+                                <div class="mockup-track">Track 1</div>
+                                <div class="mockup-progress">
+                                    <div class="mockup-progress-bar" id="mockupProgressBar"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <div class="qr-buttons" style="display: flex; gap: 12px; justify-content: center; margin-top: 15px; flex-wrap: wrap;">
                 <button class="btn btn-back" onclick="backToEditor()">← Create New QR Code</button>
@@ -967,6 +1148,23 @@
             if (previewBtn && previewBar) {
                 previewBtn.style.background = themeData.gradient;
                 previewBar.style.background = themeData.gradient;
+            }
+            
+            // Update phone mockup colors
+            const mockupPlayBtn = document.getElementById('mockupPlayBtn');
+            const mockupProgressBar = document.getElementById('mockupProgressBar');
+            const mockupPlayer = document.querySelector('.mockup-player');
+            
+            if (mockupPlayBtn) {
+                mockupPlayBtn.style.setProperty('--theme-primary', themeData.primary);
+            }
+            
+            if (mockupProgressBar) {
+                mockupProgressBar.style.background = themeData.gradient;
+            }
+            
+            if (mockupPlayer) {
+                mockupPlayer.style.background = themeData.gradient;
             }
             
             // Update hidden input for QR generation
@@ -1141,6 +1339,12 @@
                 document.getElementById('submitBtn').style.display = 'none';
                 document.getElementById('qrSection').classList.add('show');
                 
+                // Show phone mockup preview
+                const phoneMockup = document.querySelector('.phone-mockup-container');
+                if (phoneMockup) {
+                    phoneMockup.style.display = 'block';
+                }
+                
                 // Hide theme selector permanently
                 const themeSelector = document.querySelector('.theme-selector');
                 if (themeSelector) {
@@ -1234,6 +1438,12 @@
             inputs.forEach(input => input.value = '');
             
             generatedLinks = [];
+            
+            // Hide phone mockup
+            const phoneMockup = document.querySelector('.phone-mockup-container');
+            if (phoneMockup) {
+                phoneMockup.style.display = 'none';
+            }
             
             // Reset CAPTCHA
             captchaVerified = false;
