@@ -703,7 +703,7 @@
         }
 
         function stopAll() {
-            const fadeDuration = 300;
+            const fadeDuration = 1000;
             const fadeInterval = 50;
             const volumeStep = 0.05;
             
@@ -716,24 +716,25 @@
                     progressEl.classList.remove('playing');
                 }
                 
-                if (audio && !audio.paused) {
-                    const fadeOut = setInterval(() => {
-                        if (audio.volume > volumeStep) {
-                            audio.volume -= volumeStep;
-                        } else {
-                            clearInterval(fadeOut);
-                            audio.pause();
-                            audio.currentTime = 0;
-                            audio.volume = 1.0;
-                            resetTrack(index);
-                        }
-                    }, fadeInterval);
-                } else {
-                    if (audio) {
-                        audio.currentTime = 0;
-                    }
+                if (!audio) return;
+                
+                if (audio.paused) {
+                    audio.currentTime = 0;
                     resetTrack(index);
+                    return;
                 }
+                
+                const fadeOut = setInterval(() => {
+                    audio.volume -= volumeStep;
+                    
+                    if (audio.volume <= 0) {
+                        clearInterval(fadeOut);
+                        audio.pause();
+                        audio.currentTime = 0;
+                        audio.volume = 1.0;
+                        resetTrack(index);
+                    }
+                }, fadeInterval);
             });
         }
 
