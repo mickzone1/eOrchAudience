@@ -703,43 +703,23 @@
         }
 
         function stopAll() {
-            const fadeDuration = 1000;
-            const fadeInterval = 50;
-            const volumeStep = 0.05;
-            
             tracks.forEach((_, index) => {
                 const audio = audioElements[index];
                 const progressEl = document.getElementById(`progress-${index}`);
                 
-                // Reset progress bar immediately
+                // Reset progress bar
                 if (progressEl) {
                     progressEl.style.width = '0%';
                     progressEl.classList.remove('playing');
                 }
                 
-                if (!audio) return;
-                
-                // Clear any existing fade interval
-                if (audio.fadeInterval) {
-                    clearInterval(audio.fadeInterval);
+                if (audio) {
+                    // Force stop immediately
+                    audio.pause();
+                    audio.currentTime = 0;
+                    audio.volume = 1.0;
+                    resetTrack(index);
                 }
-                
-                // Reset volume to ensure consistent starting point
-                audio.volume = 1.0;
-                
-                // Start fade-out
-                audio.fadeInterval = setInterval(() => {
-                    audio.volume = Math.max(0, audio.volume - volumeStep);
-                    
-                    if (audio.volume <= 0) {
-                        clearInterval(audio.fadeInterval);
-                        delete audio.fadeInterval;
-                        audio.pause();
-                        audio.currentTime = 0;
-                        audio.volume = 1.0;
-                        resetTrack(index);
-                    }
-                }, fadeInterval);
             });
         }
 
